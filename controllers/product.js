@@ -1,6 +1,8 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 
+const { cloudinary } = require('../utils/cloudinary');
+
 const index = async(req, res) => {
     const products = await Product.find({})
 
@@ -9,13 +11,29 @@ const index = async(req, res) => {
 
 const add = async(req, res) => {
     console.log("Controller")
-    const { name, category_id, content, image, price, price_sale, num, status } = req.body
+    const { name, category_id, content, imgList, price, price_sale, num, status } = req.body
     console.log(name)
     const foundProduct = await Product.findOne({ name })
 
     if (foundProduct) return res.status(403).json({  message: 'Product is already in exist.' })
 
-    const newProduct = new Product({ name, category_id, content, image, price, price_sale, num, status })
+    //Upload img to Cloudinary
+    images = []
+    try{
+        for(const img of imgList) {
+            const uploadedResponse = await cloudinary.uploader
+            .upload(img, {
+                upload_preset: 'dev_setups',
+                folder: 'dev_setups'
+            })
+            images.push(uploadedResponse.public_id)
+        }
+    }catch(err){
+        console.log(err)
+        res.status(500).json({err: 'errrrrr'})
+    }
+
+    const newProduct = new Product({ name, category_id, content, images, price, price_sale, num, status })
     await newProduct.save()
 
     return res.status(201).json({ success: true })
