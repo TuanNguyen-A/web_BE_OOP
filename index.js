@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require("body-parser");
 const mongoClient = require("mongoose");
+const dbConfig = require("./config/db");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,12 +12,15 @@ app.use(cors({
   exposedHeaders: 'Authorization',
 }))
 
+app.use(express.json({limit: '50mb'}))
+app.use(express.urlencoded({limit: '50mb', extended: true}))
+
 // Middlewares
 app.use(bodyParser.json());
 
 // setup connect mongodb by mongoose
 mongoClient
-  .connect("mongodb://localhost/OOP_web", {
+  .connect(dbConfig.url + dbConfig.database, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
