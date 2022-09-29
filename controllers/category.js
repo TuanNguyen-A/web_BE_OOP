@@ -32,12 +32,15 @@ const deleteCategory = async(req, res, next) => {
 
 const updateCategory = async(req, res, next) => {
     const { id, name } = req.body
-    const foundCategory = await Category.findOne({ name })
+    const foundCategoryByName = await Category.findOne({ name })
 
-    if(foundCategory){
+    if(foundCategoryByName){
         updatedCategory = await Category.findById(id)
         if (updatedCategory.name != name) return res.status(403).json({ message: 'Category is already in exist.' })
-    }else{
+    }
+
+    const foundCategoryById = await Category.findById(id)
+    if(!foundCategoryById){
         return res.status(404).json({ message: 'Category does not exist.' })
     }
 
@@ -48,6 +51,11 @@ const updateCategory = async(req, res, next) => {
 const getCategory = async(req, res, next) => {
     const _id = req.params.id
     const category = await Category.find({ _id })
+
+    if(!category){
+        return res.status(404).json({ message: 'Category does not exist.' })
+    }
+
     return res.status(200).json({ category })
 }
 
