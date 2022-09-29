@@ -42,6 +42,9 @@ const add = async(req, res) => {
 const deleteProduct = async(req, res, next) => {
     const _id = req.body.id
     const product = await Product.findById({ _id })
+    if(!product){
+        return res.status(404).json({ message: 'Product does not exist.' })
+    }
     await product.remove()
     return res.status(200).json({ success: true })
 }
@@ -53,16 +56,26 @@ const updateProduct = async(req, res, next) => {
     const foundProduct = await Product.findOne({ name })
 
     if(foundProduct){
-        return res.status(403).json({ message: 'Product is already in exist.' })
+        updatedProduct = await Product.findById(id)
+        if (updatedProduct.name != name) return res.status(403).json({ message: 'CategProductory is already in exist.' })
+    }else{
+        return res.status(404).json({ message: 'Product does not exist.' })
     }
 
     const result = await Product.updateOne({ _id: id }, req.body)
     return res.status(200).json({ success: true })
 }
 
+const getProduct = async(req, res, next) => {
+    const _id = req.params.id
+    const product = await Product.find({ _id })
+    return res.status(200).json({ product })
+}
+
 module.exports = {
     add,
     index,
     deleteProduct,
+    getProduct,
     updateProduct
 };

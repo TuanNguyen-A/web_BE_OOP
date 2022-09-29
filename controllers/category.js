@@ -23,6 +23,9 @@ const addCategory = async(req, res) => {
 const deleteCategory = async(req, res, next) => {
     const { id } = req.body
     const category = await Category.findById(id)
+    if(!category){
+        return res.status(404).json({ message: 'Category does not exist.' })
+    }
     await category.remove()
     return res.status(200).json({ success: true })
 }
@@ -34,10 +37,18 @@ const updateCategory = async(req, res, next) => {
     if(foundCategory){
         updatedCategory = await Category.findById(id)
         if (updatedCategory.name != name) return res.status(403).json({ message: 'Category is already in exist.' })
+    }else{
+        return res.status(404).json({ message: 'Category does not exist.' })
     }
 
     const result = await Category.updateOne({ _id: id }, req.body)
     return res.status(200).json({ success: true })
+}
+
+const getCategory = async(req, res, next) => {
+    const _id = req.params.id
+    const category = await Category.find({ _id })
+    return res.status(200).json({ category })
 }
 
 module.exports = {
@@ -45,4 +56,5 @@ module.exports = {
     index,
     deleteCategory,
     updateCategory,
+    getCategory
 };
