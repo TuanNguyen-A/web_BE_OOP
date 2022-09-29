@@ -53,12 +53,15 @@ const updateProduct = async(req, res, next) => {
     const id = req.body.id
 
     const { name } = req.body
-    const foundProduct = await Product.findOne({ name })
+    const foundProductByName = await Product.findOne({ name })
 
-    if(foundProduct){
+    if(foundProductByName){
         updatedProduct = await Product.findById(id)
         if (updatedProduct.name != name) return res.status(403).json({ message: 'CategProductory is already in exist.' })
-    }else{
+    }
+
+    const foundProductById = await Product.findById(id)
+    if(!foundProductById){
         return res.status(404).json({ message: 'Product does not exist.' })
     }
 
@@ -69,6 +72,9 @@ const updateProduct = async(req, res, next) => {
 const getProduct = async(req, res, next) => {
     const _id = req.params.id
     const product = await Product.find({ _id })
+    if(!product){
+        return res.status(404).json({ message: 'Product does not exist.' })
+    }
     return res.status(200).json({ product })
 }
 
