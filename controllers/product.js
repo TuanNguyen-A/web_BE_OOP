@@ -3,76 +3,131 @@ const Category = require("../models/Category");
 
 const { cloudinary } = require('../utils/cloudinary');
 
-const index = async(req, res) => {
+
+const index = async (req, res) => {
     const products = await Product.find({})
 
     return res.status(200).json({ products })
 }
 
-const add = async(req, res) => {
+const add = async (req, res) => {
     console.log("Controller")
-    const { name, category_id, content, imgList, price, price_sale, num, status } = req.body
+    const { name, category_id, content, imgList, price, price_sale, num, active } = req.body
     console.log(name)
     const foundProduct = await Product.findOne({ name })
 
-    if (foundProduct) return res.status(403).json({  message: 'Product is already in exist.' })
+    if (foundProduct) return res.status(403).json({ message: 'Product is already in exist.' })
 
     //Upload img to Cloudinary
     images = []
-    try{
-        for(const img of imgList) {
+    try {
+        for (const img of imgList) {
             const uploadedResponse = await cloudinary.uploader
-            .upload(img, {
-                upload_preset: 'dev_setups',
-                folder: 'dev_setups'
-            })
+                .upload(img, {
+                    upload_preset: 'dev_setups',
+                    folder: 'dev_setups/product'
+                })
             images.push(uploadedResponse.public_id)
         }
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({err: 'errrrrr'})
+        res.status(500).json({ err: 'errrrrr' })
     }
 
-    const newProduct = new Product({ name, category_id, content, images, price, price_sale, num, status })
+
+
+    const newProduct = new Product({ name, category_id, content, images, price, price_sale, num, active })
     await newProduct.save()
 
     return res.status(201).json({ success: true })
 }
 
-const deleteProduct = async(req, res, next) => {
+const deleteProduct = async (req, res, next) => {
     const _id = req.body.id
     const product = await Product.findById({ _id })
-    if(!product){
+
+    if (!product) {
         return res.status(404).json({ message: 'Product does not exist.' })
     }
+
+    //Destroy image
+    imgList = product.images
+    try {
+        for (const img of imgList) {
+            await cloudinary.uploader.destroy(img)
+                .then(() => {
+                    console.log("Destroy img")
+                })
+        }
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ err: 'errrrrr' })
+    }
+
     await product.remove()
     return res.status(200).json({ success: true })
 }
 
-const updateProduct = async(req, res, next) => {
+const updateProduct = async (req, res, next) => {
     const id = req.body.id
 
-    const { name } = req.body
+    const { name, changedImg, category_id, content, imgList, price, price_sale, num, active } = req.body
     const foundProductByName = await Product.findOne({ name })
 
-    if(foundProductByName){
+    if (foundProductByName) {
         updatedProduct = await Product.findById(id)
         if (updatedProduct.name != name) return res.status(403).json({ message: 'CategProductory is already in exist.' })
     }
 
     const foundProductById = await Product.findById(id)
-    if(!foundProductById){
+    if (!foundProductById) {
         return res.status(404).json({ message: 'Product does not exist.' })
     }
 
-    const result = await Product.updateOne({ _id: id }, req.body)
+    //Update imgs
+    if (changedImg) {
+        //destroy image
+        oldimgList = foundProductById.images
+        try {
+            for (const img of oldimgList) {
+                await cloudinary.uploader.destroy(img)
+                    .then(() => {
+                        console.log("Destroy img")
+                    })
+            }
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ err: 'errrrrr' })
+        }
+
+        //Upload new img to Cloudinary
+        images = []
+        try {
+            for (const img of imgList) {
+                const uploadedResponse = await cloudinary.uploader
+                    .upload(img, {
+                        upload_preset: 'dev_setups',
+                        folder: 'dev_setups/product'
+                    })
+                images.push(uploadedResponse.public_id)   
+            }
+        } catch (err) {
+            console.log(err)
+            res.status(500).json({ err: 'errrrrr' })
+        }
+        
+        await Product.updateOne({ _id: id }, { name, category_id, content, price, price_sale, num, active, images })
+        return res.status(200).json({ success: true })
+    }
+    
+    const result = await Product.updateOne({ _id: id }, { name, category_id, content, price, price_sale, num, active })
     return res.status(200).json({ success: true })
 }
 
-const getProduct = async(req, res, next) => {
+const getProduct = async (req, res, next) => {
     const _id = req.params.id
     const product = await Product.find({ _id })
-    if(!product){
+    if (!product) {
         return res.status(404).json({ message: 'Product does not exist.' })
     }
     return res.status(200).json({ product })

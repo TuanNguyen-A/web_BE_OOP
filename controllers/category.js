@@ -7,14 +7,14 @@ const index = async(req, res) => {
 }
 
 const addCategory = async(req, res) => {
-    const { name, status } = req.body
+    const { name, active } = req.body
     
     const foundCategory = await Category.findOne({ name })
     console.log("HERE")
 
     if (foundCategory) return res.status(403).json({ message: 'Category is already in exist.' })
 
-    const newCategory = new Category({ name, status })
+    const newCategory = new Category({ name, active })
     await newCategory.save()
 
     return res.status(201).json({ success: true })
