@@ -28,9 +28,9 @@ const ProductSchema = new Schema({
         type: Number,
         required: true
     },
-    status: {
-        type: Number,
-        default: 1
+    active: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,
