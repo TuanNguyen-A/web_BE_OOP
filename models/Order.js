@@ -15,6 +15,14 @@ const OrderSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
+    phone:{
+        type: String,
+        required: true
+    },
+    address:{
+        type: String,
+        required: true
+    },
     note: {
         type: String
     },
