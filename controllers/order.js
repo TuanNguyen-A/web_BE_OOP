@@ -54,9 +54,22 @@ const getOrder = async (req, res, next) => {
     return res.status(200).json({ order })
 }
 
+const updateOrder = async(req, res, next) => {
+    const { id, status } = req.body
+
+    const foundOrderById = await Order.findById(id)
+    if(!foundOrderById){
+        return res.status(404).json({ message: 'Order does not exist.' })
+    }
+
+    const result = await Order.updateOne({ _id: id }, {status})
+    return res.status(200).json({ success: true })
+}
+
 module.exports = {
     add,
     index,
     deleteOrder,
+    updateOrder,
     getOrder
 };
