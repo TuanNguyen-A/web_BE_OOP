@@ -3,6 +3,9 @@ const OrderProduct = require("../models/OrderProduct");
 const orderid = require('order-id')('key');
 
 const index = async (req, res) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const orders = await Order
         .find({})
         .populate({
@@ -55,6 +58,9 @@ const getOrder = async (req, res, next) => {
 }
 
 const updateOrder = async(req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const { id, status } = req.body
 
     const foundOrderById = await Order.findById(id)
@@ -66,10 +72,26 @@ const updateOrder = async(req, res, next) => {
     return res.status(200).json({ success: true })
 }
 
+const listOrderByUser = async(req, res, next) => {
+
+    const orders = await Order
+        .find({user: req.user._id})
+        .populate({
+            path: 'orderProducts',
+            populate: {path: 'product'}
+        })
+
+    console.log("ORDER", orders)
+
+    return res.status(200).json({ orders })
+
+}
+
 module.exports = {
     add,
     index,
     deleteOrder,
     updateOrder,
-    getOrder
+    getOrder,
+    listOrderByUser
 };

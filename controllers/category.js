@@ -7,6 +7,9 @@ const index = async(req, res) => {
 }
 
 const addCategory = async(req, res) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const { name, active } = req.body
     
     const foundCategory = await Category.findOne({ name })
@@ -21,6 +24,10 @@ const addCategory = async(req, res) => {
 }
 
 const deleteCategory = async(req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
     const { id } = req.body
     const category = await Category.findById(id)
     if(!category){
@@ -31,6 +38,10 @@ const deleteCategory = async(req, res, next) => {
 }
 
 const updateCategory = async(req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
     const { id, name } = req.body
     const foundCategoryByName = await Category.findOne({ name })
 
