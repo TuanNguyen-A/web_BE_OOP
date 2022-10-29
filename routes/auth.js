@@ -11,7 +11,7 @@ const passportConfig = require('../middlewares/passport')
 
 const AuthController = require('../controllers/auth')
 
-router.route('/signUp').post(validateBody(schemas.authSignUpSchema),AuthController.signUp)
+router.route('/signUp').post(validateBody(schemas.authSignUpSchema), AuthController.signUp)
 
 router.route('/signIn').post(validateBody(schemas.authSignInSchema), passport.authenticate('local', { session: false }), AuthController.signIn)
 

@@ -2,12 +2,18 @@ const Slider = require("../models/Slider");
 const { cloudinary } = require('../utils/cloudinary');
 
 const index = async (req, res) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const sliders = await Slider.find({})
 
     return res.status(200).json({ sliders })
 }
 
 const addSlider = async (req, res) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const { name, content, image, active } = req.body
 
     const foundSlider = await Slider.findOne({ name })
@@ -38,6 +44,9 @@ const addSlider = async (req, res) => {
 }
 
 const deleteSlider = async (req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const { id } = req.body
     const slider = await Slider.findById(id)
     if (!slider) {
@@ -59,6 +68,9 @@ const deleteSlider = async (req, res, next) => {
 }
 
 const updateSlider = async (req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const { id, name, content, image, active, changedImg } = req.body
     const foundSliderByName = await Slider.findOne({ name })
 

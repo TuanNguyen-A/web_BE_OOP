@@ -17,7 +17,7 @@ passport.use(
     },
     async (payload, done) => {
       try {
-        console.log('Passport Jwt')
+        console.log('Passport JWT')
         const user = await User.findById(payload.sub);
 
         if (!user) return done(null, false);

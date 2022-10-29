@@ -1,13 +1,19 @@
 const Discount = require("../models/Discount");
 
 const index = async(req, res) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
     const discounts = await Discount.find({})
 
     return res.status(200).json({ discounts })
 }
 
 const add = async(req, res) => {
-    console.log("Controller")
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
 
     const { code, discount, minium_order, purchase_limit, expiration_date, content, active } = req.body
     console.log(code)
@@ -22,6 +28,10 @@ const add = async(req, res) => {
 }
 
 const deleteDiscount = async(req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
     const { id } = req.body
     const discount = await Discount.findById(id)
     if(!discount){
@@ -32,6 +42,9 @@ const deleteDiscount = async(req, res, next) => {
 }
 
 const updateDiscount = async(req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const id = req.body.id
 
     const { code} = req.body
