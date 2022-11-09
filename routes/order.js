@@ -9,5 +9,6 @@ router.route('/add').post(OrderController.add)
 router.route('/list').get(OrderController.index)
 router.route('/delete').post(OrderController.deleteOrder)
 router.route('/:id').get(OrderController.getOrder)
+router.route('/search/:search').get(OrderController.searchOrder)
 
 module.exports = router;

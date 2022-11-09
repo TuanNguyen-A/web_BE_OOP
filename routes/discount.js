@@ -10,5 +10,7 @@ router.route('/list').get(DiscountController.index)
 router.route('/update').post(DiscountController.updateDiscount)
 router.route('/delete').post(DiscountController.deleteDiscount)
 router.route('/:id').get(DiscountController.getDiscount)
+router.route('/search/:search').get(DiscountController.searchDiscount)
+
 
 module.exports = router;

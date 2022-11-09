@@ -54,9 +54,18 @@ const getOrder = async (req, res, next) => {
     return res.status(200).json({ order })
 }
 
+
+const searchOrder = async(req, res, next) =>{
+    const search = req.params.search
+    const oders = await Order.find({ id: { $regex: search } })
+    console.log(oders)
+    return res.status(200).json({ oders })
+}
+
 module.exports = {
     add,
     index,
     deleteOrder,
-    getOrder
+    getOrder,
+    searchOrder
 };

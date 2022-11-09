@@ -10,5 +10,7 @@ router.route('/add').post(FeedbackController.add)
 router.route('/list').get(FeedbackController.index)
 router.route('/delete').post(FeedbackController.deleteFeedback)
 router.route('/:id').get(FeedbackController.getFeedback)
+router.route('/search/:search').get(FeedbackController.searchFeedback)
+
 
 module.exports = router;

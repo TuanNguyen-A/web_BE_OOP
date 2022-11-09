@@ -64,10 +64,19 @@ const getDiscount = async(req, res, next) => {
     return res.status(200).json({ discount })
 }
 
+const searchDiscount = async(req, res, next) =>{
+    const search = req.params.search
+    const discounts = await Discount.find({ code: { $regex: search } })
+    console.log(discounts)
+    return res.status(200).json({ discounts })
+}
+
+
 module.exports = {
     add,
     index,
     deleteDiscount,
     updateDiscount,
+    searchDiscount,
     getDiscount
 };
