@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const bcrypt = require('bcryptjs')
 
 const index = async(req, res) => {
     const users = await User.find({})
@@ -7,16 +8,21 @@ const index = async(req, res) => {
 }
 
 const updateUser = async(req, res, next) => {
-    const { email } = req.body
-    const foundUser = await User.findOne({ email })
+    const { email, id } = req.body
 
-    if(foundUser){
-        console.log("Testtt",foundUser)
-        updatedUser = await User.findById(id)
-        if (updatedUser.email != email) return res.status(403).json({ message: 'Email is already in exist.' })
+    const foundUserById = await User.findById(id)
+    if(!foundUserById){
+        return res.status(404).json({ message: 'User does not exist.' })
     }
 
-    const id = req.params.id
+    if(email != foundUserById.email){
+        return res.status(400).json({ message: 'Cannot change email' })
+    }
+
+    const salt = await bcrypt.genSalt(10)
+    const passwordHashed = await bcrypt.hash(req.body.password, salt)
+    req.body.password = passwordHashed
+
     const result = await User.updateOne({ _id: id }, req.body)
     return res.status(200).json({ success: true })
 }
@@ -24,6 +30,11 @@ const updateUser = async(req, res, next) => {
 const deleteUser = async(req, res, next) => {
     const { id } = req.body
     const user = await User.findById(id)
+
+    if(!user){
+        return res.status(404).json({ message: 'User does not exist.' })
+    }
+
     await user.remove()
     return res.status(200).json({ success: true })
 }

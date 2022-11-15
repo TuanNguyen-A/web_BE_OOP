@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const CategoryController = require('../controllers/category')
+const passport = require('passport')
 
 router.route('/').get(CategoryController.index)
 router.route('/add').post(CategoryController.addCategory)

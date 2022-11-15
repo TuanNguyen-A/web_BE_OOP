@@ -3,6 +3,9 @@ const OrderProduct = require("../models/OrderProduct");
 const orderid = require('order-id')('key');
 
 const index = async (req, res) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const orders = await Order
         .find({})
         .populate({
@@ -54,12 +57,40 @@ const getOrder = async (req, res, next) => {
     return res.status(200).json({ order })
 }
 
-
 const searchOrder = async(req, res, next) =>{
     const search = req.params.search
     const oders = await Order.find({ id: { $regex: search } })
     console.log(oders)
     return res.status(200).json({ oders })
+    
+const updateOrder = async(req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+    const { id, status } = req.body
+
+    const foundOrderById = await Order.findById(id)
+    if(!foundOrderById){
+        return res.status(404).json({ message: 'Order does not exist.' })
+    }
+
+    const result = await Order.updateOne({ _id: id }, {status})
+    return res.status(200).json({ success: true })
+}
+
+const listOrderByUser = async(req, res, next) => {
+
+    const orders = await Order
+        .find({user: req.user._id})
+        .populate({
+            path: 'orderProducts',
+            populate: {path: 'product'}
+        })
+
+    console.log("ORDER", orders)
+
+    return res.status(200).json({ orders })
+
 }
 
 module.exports = {
@@ -67,5 +98,7 @@ module.exports = {
     index,
     deleteOrder,
     getOrder,
-    searchOrder
+    searchOrder,
+    updateOrder,
+    listOrderByUser
 };

@@ -5,6 +5,7 @@ const { cloudinary } = require('../utils/cloudinary');
 
 
 const index = async (req, res) => {
+
     const products = await Product.find({})
 
     return res.status(200).json({ products })
@@ -18,9 +19,12 @@ const newProducts = async (req, res) => {
 }
 
 const add = async (req, res) => {
-    console.log("Controller")
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
     const { name, category_id, content, imgList, price, price_sale, num, active } = req.body
-    console.log(name)
+    
     const foundProduct = await Product.findOne({ name })
 
     if (foundProduct) return res.status(403).json({ message: 'Product is already in exist.' })
@@ -50,6 +54,9 @@ const add = async (req, res) => {
 }
 
 const deleteProduct = async (req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const _id = req.body.id
     const product = await Product.findById({ _id })
 
@@ -76,6 +83,9 @@ const deleteProduct = async (req, res, next) => {
 }
 
 const updateProduct = async (req, res, next) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
     const id = req.body.id
 
     const { name, changedImg, category_id, content, imgList, price, price_sale, num, active } = req.body
