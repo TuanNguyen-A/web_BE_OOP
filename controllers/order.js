@@ -57,6 +57,12 @@ const getOrder = async (req, res, next) => {
     return res.status(200).json({ order })
 }
 
+const searchOrder = async(req, res, next) =>{
+    const search = req.params.search
+    const oders = await Order.find({ id: { $regex: search } })
+    console.log(oders)
+    return res.status(200).json({ oders })
+    
 const updateOrder = async(req, res, next) => {
     if(req.user.role!="admin"){
         return res.status(400).json({ message: 'Bad request!!!' })
@@ -91,7 +97,8 @@ module.exports = {
     add,
     index,
     deleteOrder,
-    updateOrder,
     getOrder,
+    searchOrder,
+    updateOrder,
     listOrderByUser
 };

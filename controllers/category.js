@@ -70,10 +70,18 @@ const getCategory = async(req, res, next) => {
     return res.status(200).json({ category })
 }
 
+const searchCategory = async(req, res, next) =>{
+    const search = req.params.search
+    const categories = await Category.find({ name: { $regex: search } })
+    console.log(categories)
+    return res.status(200).json({ categories })
+}
+
 module.exports = {
     addCategory,
     index,
     deleteCategory,
     updateCategory,
+    searchCategory,
     getCategory
 };

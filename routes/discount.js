@@ -10,5 +10,7 @@ router.route('/list').get(passport.authenticate('jwt', { session: false }), Disc
 router.route('/update').post(passport.authenticate('jwt', { session: false }), DiscountController.updateDiscount)
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), DiscountController.deleteDiscount)
 router.route('/:id').get(DiscountController.getDiscount)
+router.route('/search/:search').get(DiscountController.searchDiscount)
+
 
 module.exports = router;

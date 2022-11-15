@@ -40,9 +40,17 @@ const getFeedback = async (req, res, next) => {
     return res.status(200).json({ feedback })
 }
 
+const searchFeedback = async(req, res, next) =>{
+    const search = req.params.search
+    const feedbacks = await Feedback.find({ email: { $regex: search } })
+    console.log(feedbacks)
+    return res.status(200).json({ feedbacks })
+}
+
 module.exports = {
     add,
     index,
     deleteFeedback,
+    searchFeedback,
     getFeedback
 };
