@@ -62,6 +62,7 @@ const searchOrder = async(req, res, next) =>{
     const oders = await Order.find({ id: { $regex: search } })
     console.log(oders)
     return res.status(200).json({ oders })
+}
     
 const updateOrder = async(req, res, next) => {
     if(req.user.role!="admin"){
