@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../CDTT2_server"
+		},
+		{
+			"path": "../../myapp"
+		}
+	],
+	"settings": {}
+}

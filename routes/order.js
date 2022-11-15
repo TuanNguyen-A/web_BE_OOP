@@ -8,6 +8,7 @@ const OrderController = require('../controllers/order')
 
 
 router.route('/add').post(OrderController.add)
+router.route('/search/:search').get(OrderController.searchOrder)
 router.route('/list').get(passport.authenticate('jwt', { session: false }), OrderController.index)
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), OrderController.deleteOrder)
 router.route('/update').post(passport.authenticate('jwt', { session: false }), OrderController.updateOrder)
