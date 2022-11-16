@@ -5,7 +5,29 @@ const index = async (req, res) => {
     if(req.user.role!="admin"){
         return res.status(400).json({ message: 'Bad request!!!' })
     }
-    const sliders = await Slider.find({})
+
+    const search = req.query.search ? req.query.search : ''
+    const sort = req.query.sort ? req.query.sort : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    
+    if(sort){
+        const asc = req.query.asc ? req.query.asc : 1
+        console.log(asc)
+        var sortObj = {};
+        sortObj[sort] = asc;
+    
+        sliders = await Slider
+        .find({name: { $regex: search }})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort(sortObj)
+    }else{
+        sliders = await Slider
+        .find({name: { $regex: search }})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+    }
 
     return res.status(200).json({ sliders })
 }

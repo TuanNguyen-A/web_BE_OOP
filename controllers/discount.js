@@ -5,7 +5,28 @@ const index = async(req, res) => {
         return res.status(400).json({ message: 'Bad request!!!' })
     }
 
-    const discounts = await Discount.find({})
+    const search = req.query.search ? req.query.search : ''
+    const sort = req.query.sort ? req.query.sort : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    
+    if(sort){
+        const asc = req.query.asc ? req.query.asc : 1
+        console.log(asc)
+        var sortObj = {};
+        sortObj[sort] = asc;
+    
+        discounts = await Discount
+        .find({name: { $regex: search }})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort(sortObj)
+    }else{
+        discounts = await Discount
+        .find({name: { $regex: search }})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+    }
 
     return res.status(200).json({ discounts })
 }
@@ -77,19 +98,11 @@ const getDiscount = async(req, res, next) => {
     return res.status(200).json({ discount })
 }
 
-const searchDiscount = async(req, res, next) =>{
-    const search = req.params.search
-    const discounts = await Discount.find({ code: { $regex: search } })
-    console.log(discounts)
-    return res.status(200).json({ discounts })
-}
-
 
 module.exports = {
     add,
     index,
     deleteDiscount,
     updateDiscount,
-    searchDiscount,
     getDiscount
 };

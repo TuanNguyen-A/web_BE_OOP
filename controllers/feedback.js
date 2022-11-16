@@ -4,6 +4,9 @@ const index = async(req, res) => {
     if(req.user.role!="admin"){
         return res.status(400).json({ message: 'Bad request!!!' })
     }
+
+    
+
     const feedbacks = await Feedback.find({}).populate('user')
 
     return res.status(200).json({ feedbacks })

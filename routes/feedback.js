@@ -6,9 +6,9 @@ const { validateBody, validateParam, schemas } = require('../helpers/routerHelpe
 const FeedbackController = require('../controllers/feedback')
 
 
+router.route('/').get(passport.authenticate('jwt', { session: false }), FeedbackController.index)
 router.route('/add').post(FeedbackController.add)
 router.route('/search/:search').get(FeedbackController.searchFeedback)
-router.route('/list').get(passport.authenticate('jwt', { session: false }), FeedbackController.index)
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), FeedbackController.deleteFeedback)
 router.route('/:id').get(passport.authenticate('jwt', { session: false }), FeedbackController.getFeedback)
 
