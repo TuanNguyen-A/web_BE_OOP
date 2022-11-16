@@ -5,12 +5,11 @@ const passport = require('passport')
 const { validateBody, validateParam, schemas } = require('../helpers/routerHelpers')
 const DiscountController = require('../controllers/discount')
 
+router.route('/').get(passport.authenticate('jwt', { session: false }), DiscountController.index)
 router.route('/add').post(passport.authenticate('jwt', { session: false }), DiscountController.add)
-router.route('/list').get(passport.authenticate('jwt', { session: false }), DiscountController.index)
 router.route('/update').post(passport.authenticate('jwt', { session: false }), DiscountController.updateDiscount)
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), DiscountController.deleteDiscount)
 router.route('/:id').get(DiscountController.getDiscount)
-router.route('/search/:search').get(DiscountController.searchDiscount)
 
 
 module.exports = router;
