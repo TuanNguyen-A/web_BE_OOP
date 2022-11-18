@@ -11,6 +11,8 @@ const index = async (req, res) => {
     // const sort = req.query.sort ? req.query.sort : ''
     // const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     // const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    
+    console.log(search)
 
     const orders = await Order
         .find({})
@@ -33,6 +35,8 @@ const index = async (req, res) => {
             }
         })
 
+    
+    
     return res.status(200).json({ orders })
 }
 

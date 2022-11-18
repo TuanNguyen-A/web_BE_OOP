@@ -24,8 +24,10 @@ const index = async(req, res) => {
         .skip(pageSize * (pageIndex - 1))
     }
     
+    console.log(categories.length)
+    totalPage = Math.ceil(categories.length/pageSize)
 
-    return res.status(200).json({ categories })
+    return res.status(200).json({ categories, totalPage})
 }
 
 const addCategory = async(req, res) => {
