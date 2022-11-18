@@ -2,9 +2,6 @@ const Slider = require("../models/Slider");
 const { cloudinary } = require('../utils/cloudinary');
 
 const index = async (req, res) => {
-    if(req.user.role!="admin"){
-        return res.status(400).json({ message: 'Bad request!!!' })
-    }
 
     const search = req.query.search ? req.query.search : ''
     const sort = req.query.sort ? req.query.sort : ''

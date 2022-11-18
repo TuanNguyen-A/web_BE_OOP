@@ -4,7 +4,7 @@ const router = express.Router()
 const SliderController = require('../controllers/slider')
 const passport = require('passport')
 
-router.route('/').get(passport.authenticate('jwt', { session: false }), SliderController.index)
+router.route('/').get(SliderController.index)
 router.route('/add').post(passport.authenticate('jwt', { session: false }), SliderController.addSlider)
 router.route('/update').post(passport.authenticate('jwt', { session: false }), SliderController.updateSlider)
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), SliderController.deleteSlider)

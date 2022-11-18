@@ -6,13 +6,32 @@ const index = async (req, res) => {
     if(req.user.role!="admin"){
         return res.status(400).json({ message: 'Bad request!!!' })
     }
+
+    const search = req.query.search ? req.query.search : ''
+    // const sort = req.query.sort ? req.query.sort : ''
+    // const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    // const pageSize = req.query.pageSize ? req.query.pageSize : 10
+
     const orders = await Order
         .find({})
         .populate({
             path: 'orderProducts',
-            populate: {path: 'product'}
+            populate: {
+                path: 'product',
+            }
         })
-        .populate('user')
+        .populate({
+            path:'user',
+            match:{
+                fullName: { $regex: search }
+                // $or: [
+                //     { email: { $regex: search }},
+                //     { fullName: { $regex: search }},
+                //     { address: { $regex: search }}, 
+                //     { phoneNumber: { $regex: search }}
+                // ]
+            }
+        })
 
     return res.status(200).json({ orders })
 }
