@@ -26,7 +26,7 @@ const index = async (req, res) => {
         .skip(pageSize * (pageIndex - 1))
     }
 
-    totalPage = Math.ceil(categories.length/pageSize)
+    totalPage = Math.ceil(sliders.length/pageSize)
 
     return res.status(200).json({ sliders, totalPage })
 }
