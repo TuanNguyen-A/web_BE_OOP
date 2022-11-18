@@ -15,6 +15,8 @@ const index = async (req, res) => {
         console.log(asc)
         var sortObj = {};
         sortObj[sort] = asc;
+
+        console.log(sort)
     
         products = await Product
         .find({name: { $regex: search }})
@@ -28,7 +30,7 @@ const index = async (req, res) => {
         .skip(pageSize * (pageIndex - 1))
     }
 
-    totalPage = Math.ceil(categories.length/pageSize)
+    totalPage = Math.ceil(products.length/pageSize)
     return res.status(200).json({ products, totalPage })
 }
 
