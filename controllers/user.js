@@ -2,9 +2,33 @@ const User = require("../models/User");
 const bcrypt = require('bcryptjs')
 
 const index = async(req, res) => {
-    const users = await User.find({})
 
-    return res.status(200).json({ users })
+    const search = req.query.search ? req.query.search : ''
+    const sort = req.query.sort ? req.query.sort : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    
+    if(sort){
+        const asc = req.query.asc ? req.query.asc : 1
+        console.log(asc)
+        var sortObj = {};
+        sortObj[sort] = asc;
+    
+        users = await User
+        .find({fullName: { $regex: search }})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort(sortObj)
+    }else{
+        users = await User
+        .find({fullName: { $regex: search }})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+    }
+
+    totalPage = Math.ceil(categories.length/pageSize)
+
+    return res.status(200).json({ users, totalPage })
 }
 
 const updateUser = async(req, res, next) => {
