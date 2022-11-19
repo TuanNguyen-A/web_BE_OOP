@@ -29,7 +29,8 @@ const index = async(req, res) => {
     }
 
     totalPage = Math.ceil(discounts.length/pageSize)
-    return res.status(200).json({ discounts, totalPage })
+    totalItem = await Discount.countDocuments({active: true})
+    return res.status(200).json({ discounts, totalPage, totalItem })
 }
 
 const add = async(req, res) => {

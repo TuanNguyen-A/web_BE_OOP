@@ -3,7 +3,6 @@ const Category = require("../models/Category");
 
 const { cloudinary } = require('../utils/cloudinary');
 
-
 const index = async (req, res) => {
     const search = req.query.search ? req.query.search : ''
     const sort = req.query.sort ? req.query.sort : ''
@@ -23,6 +22,7 @@ const index = async (req, res) => {
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .sort(sortObj)
+
     }else{
         products = await Product
         .find({name: { $regex: search }})
@@ -31,7 +31,8 @@ const index = async (req, res) => {
     }
 
     totalPage = Math.ceil(products.length/pageSize)
-    return res.status(200).json({ products, totalPage })
+    totalItem = await Product.countDocuments({active: true})
+    return res.status(200).json({ products, totalPage, totalItem })
 }
 
 const newProducts = async (req, res) => {
