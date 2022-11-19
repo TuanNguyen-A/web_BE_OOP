@@ -27,8 +27,8 @@ const index = async (req, res) => {
     }
 
     totalPage = Math.ceil(sliders.length/pageSize)
-
-    return res.status(200).json({ sliders, totalPage })
+    totalItem = await Slider.countDocuments({active: true})
+    return res.status(200).json({ sliders, totalPage, totalItem })
 }
 
 const addSlider = async (req, res) => {

@@ -8,14 +8,18 @@ const index = async (req, res) => {
     }
 
     const search = req.query.search ? req.query.search : ''
-    // const sort = req.query.sort ? req.query.sort : ''
-    // const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
-    // const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    const sort = req.query.sort ? req.query.sort : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
     
-    console.log(search)
-
-    const orders = await Order
-        .find({})
+    if(sort){
+        const asc = req.query.asc ? req.query.asc : 1
+        console.log(asc)
+        var sortObj = {};
+        sortObj[sort] = asc;
+    
+        orders = await Order
+        .find()
         .populate({
             path: 'orderProducts',
             populate: {
@@ -25,19 +29,48 @@ const index = async (req, res) => {
         .populate({
             path:'user',
             match:{
-                fullName: { $regex: search }
-                // $or: [
-                //     { email: { $regex: search }},
-                //     { fullName: { $regex: search }},
-                //     { address: { $regex: search }}, 
-                //     { phoneNumber: { $regex: search }}
-                // ]
+                $or: [
+                    { email: { $regex: search }},
+                    { fullName: { $regex: search }},
+                    { address: { $regex: search }}, 
+                    { phoneNumber: { $regex: search }}
+                ]
             }
         })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort(sortObj)
+    }else{
+        orders = await Order
+        .find()
+        .populate({
+            path: 'orderProducts',
+            populate: {
+                path: 'product',
+            }
+        })
+        .populate({
+            path:'user',
+            match:{
+                $or: [
+                    { email: { $regex: search }},
+                    { fullName: { $regex: search }},
+                    { address: { $regex: search }}, 
+                    { phoneNumber: { $regex: search }}
+                ]
+            }
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        //.where("active").ne(false)
+    }
 
+    orders = orders.filter(item => (item.user != null));
     
+    totalPage = Math.ceil(orders.length/pageSize)
+    totalItem = await Order.countDocuments()
     
-    return res.status(200).json({ orders })
+    return res.status(200).json({ orders, totalPage, totalItem })
 }
 
 const add = async (req, res) => {

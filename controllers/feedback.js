@@ -5,16 +5,58 @@ const index = async(req, res) => {
         return res.status(400).json({ message: 'Bad request!!!' })
     }
 
-    const feedbacks = await Feedback.find({}).populate('user')
+    const search = req.query.search ? req.query.search : ''
+    const sort = req.query.sort ? req.query.sort : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+
+    if(sort){
+        feedbacks = await Feedback
+        .find({})
+        .populate({
+            path:'user',
+            match: {
+                $or: [
+                    { email: { $regex: search }},
+                    { fullName: { $regex: search }},
+                    { address: { $regex: search }}, 
+                    { phoneNumber: { $regex: search }}
+                ]
+            }
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort(sortObj)
+
+    }else{
+        feedbacks = await Feedback
+        .find({})
+        .populate({
+            path:'user',
+            match: {
+                $or: [
+                    { email: { $regex: search } },
+                    { fullName: { $regex: search } },
+                    { address: { $regex: search } }, 
+                    { phoneNumber: { $regex: search } }
+                ]
+            }
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+    }
+
+    feedbacks = feedbacks.filter(item => (item.user != null));
+    
+    totalPage = Math.ceil(feedbacks.length/pageSize)
+    totalItem = await Feedback.countDocuments()
 
     return res.status(200).json({ feedbacks })
 }
 
 const add = async(req, res) => {
-    if(req.user.role!="admin"){
-        return res.status(400).json({ message: 'Bad request!!!' })
-    }
-    const newFeedback = new Feedback(req.body)
+    
+    const newFeedback = new Feedback({content: req.body.content, user: req.user._id})
     await newFeedback.save()
     return res.status(201).json({ success: true })
 }

@@ -27,8 +27,8 @@ const index = async(req, res) => {
     }
 
     totalPage = Math.ceil(users.length/pageSize)
-
-    return res.status(200).json({ users, totalPage })
+    totalItem = await User.countDocuments({active: true})
+    return res.status(200).json({ users, totalPage, totalItem })
 }
 
 const updateUser = async(req, res, next) => {

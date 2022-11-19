@@ -19,25 +19,27 @@ const index = async(req, res) => {
         .sort(sortObj)
     }else{
         categories = await Category
-        .find({name: { $regex: search }})
+        .find({name: { $regex: search }} )
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
+        //.where("active").ne(false)
     }
     
     console.log(categories.length)
     totalPage = Math.ceil(categories.length/pageSize)
+    totalItem = await Category.countDocuments({active: true})
 
-    return res.status(200).json({ categories, totalPage})
+    return res.status(200).json({ categories, totalPage, totalItem})
 }
 
 const addCategory = async(req, res) => {
+    console.log('HHHHHH',req.user)
     if(req.user.role!="admin"){
         return res.status(400).json({ message: 'Bad request!!!' })
     }
     const { name, active } = req.body
     
     const foundCategory = await Category.findOne({ name })
-    console.log("HERE")
 
     if (foundCategory) return res.status(403).json({ message: 'Category is already in exist.' })
 
