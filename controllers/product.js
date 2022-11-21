@@ -18,20 +18,20 @@ const index = async (req, res) => {
         console.log(sort)
     
         products = await Product
-        .find({name: { $regex: search }})
+        .find({name: { $regex: search }, active: true})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .sort(sortObj)
 
     }else{
         products = await Product
-        .find({name: { $regex: search }})
+        .find({name: { $regex: search }, active: true})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
     }
 
-    totalPage = Math.ceil(products.length/pageSize)
-    totalItem = await Product.countDocuments({active: true})
+    totalItem = await Product.countDocuments({name: { $regex: search }, active: true})
+    totalPage = Math.ceil(totalItem/pageSize)
     return res.status(200).json({ products, totalPage, totalItem })
 }
 
@@ -174,7 +174,7 @@ const getProduct = async (req, res, next) => {
     return res.status(200).json({ product })
 }
 
-const searchProductByCategoryId = async(req, res, next) =>{
+const listProductByCategoryId = async(req, res, next) =>{
     const id = req.params.id
     console.log(id)
     try{
@@ -201,7 +201,7 @@ module.exports = {
     deleteProduct,
     getProduct,
     updateProduct,
-    searchProductByCategoryId,
+    listProductByCategoryId,
     searchProduct,
     newProducts
 };

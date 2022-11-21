@@ -13,21 +13,20 @@ const index = async(req, res) => {
         sortObj[sort] = asc;
     
         categories = await Category
-        .find({name: { $regex: search }})
+        .find({name: { $regex: search }, active: true})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .sort(sortObj)
     }else{
         categories = await Category
-        .find({name: { $regex: search }} )
+        .find({name: { $regex: search }, active: true} )
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         //.where("active").ne(false)
     }
     
-    console.log(categories.length)
-    totalPage = Math.ceil(categories.length/pageSize)
-    totalItem = await Category.countDocuments({active: true})
+    totalItem = await Category.countDocuments({name: { $regex: search }, active: true})
+    totalPage = Math.ceil(totalItem/pageSize)
 
     return res.status(200).json({ categories, totalPage, totalItem})
 }
