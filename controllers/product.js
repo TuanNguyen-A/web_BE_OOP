@@ -32,14 +32,25 @@ const index = async (req, res) => {
 
     totalItem = await Product.countDocuments({name: { $regex: search }, active: true})
     totalPage = Math.ceil(totalItem/pageSize)
+
     return res.status(200).json({ products, totalPage, totalItem })
 }
 
 const newProducts = async (req, res) => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    const products = await Product.find({createdAt: {$gte: threeDaysAgo}})
 
-    return res.status(200).json({ products })
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    
+    products = await Product
+        .find({createdAt: {$gte: threeDaysAgo}, active: true})
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+
+    totalItem = await Product.countDocuments({createdAt: {$gte: threeDaysAgo}, active: true})
+    totalPage = Math.ceil(totalItem/pageSize)
+
+    return res.status(200).json({ products, totalItem, totalPage })
 }
 
 const add = async (req, res) => {
@@ -188,13 +199,6 @@ const listProductByCategoryId = async(req, res, next) =>{
     return res.status(200).json({ products })
 }
 
-const searchProduct = async(req, res, next) =>{
-    const search = req.params.search
-    const products = await Product.find({ name: { $regex: search } })
-    console.log(products)
-    return res.status(200).json({ products })
-}
-
 module.exports = {
     add,
     index,
@@ -202,6 +206,5 @@ module.exports = {
     getProduct,
     updateProduct,
     listProductByCategoryId,
-    searchProduct,
     newProducts
 };

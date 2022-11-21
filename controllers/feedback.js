@@ -48,13 +48,16 @@ const index = async(req, res) => {
 
     feedbacks = feedbacks.filter(item => (item.user != null));
     
-    totalItem = await Feedback.countDocuments({$or: [
-        { 'user.email': { $regex: search } },
-        { 'user.fullName': { $regex: search } },
-        { 'user.address': { $regex: search } }, 
-        { 'user.phoneNumber': { $regex: search } }
-    ]})
-    
+    totalItem = await Feedback.countDocuments({})
+
+    // $or: [
+    //     { 'user.email': { $regex: search } },
+    //     { 'user.fullName': { $regex: search } },
+    //     { 'user.address': { $regex: search } }, 
+    //     { 'user.phoneNumber': { $regex: search } }
+    // ]
+
+    console.log(totalItem)
     totalPage = Math.ceil(totalItem/pageSize)
 
     return res.status(200).json({ feedbacks, totalItem, totalPage })
