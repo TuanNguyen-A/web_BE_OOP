@@ -67,8 +67,8 @@ const index = async (req, res) => {
 
     orders = orders.filter(item => (item.user != null));
     
-    totalPage = Math.ceil(orders.length/pageSize)
     totalItem = await Order.countDocuments()
+    totalPage = Math.ceil(totalItem/pageSize)
     
     return res.status(200).json({ orders, totalPage, totalItem })
 }

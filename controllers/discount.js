@@ -17,19 +17,20 @@ const index = async(req, res) => {
         sortObj[sort] = asc;
     
         discounts = await Discount
-        .find({name: { $regex: search }})
+        .find({name: { $regex: search }, active: true})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .sort(sortObj)
     }else{
         discounts = await Discount
-        .find({name: { $regex: search }})
+        .find({name: { $regex: search }, active: true})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
     }
 
-    totalPage = Math.ceil(discounts.length/pageSize)
-    totalItem = await Discount.countDocuments({active: true})
+    totalItem = await Discount.countDocuments({name: { $regex: search }, active: true})
+    totalPage = Math.ceil(totalItem/pageSize)
+    
     return res.status(200).json({ discounts, totalPage, totalItem })
 }
 

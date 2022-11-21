@@ -9,7 +9,7 @@ router.route('/add').post(passport.authenticate('jwt', { session: false }), Prod
 router.route('/update').post(passport.authenticate('jwt', { session: false }), ProductController.updateProduct)
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), ProductController.deleteProduct)
 router.route('/:id').get(ProductController.getProduct)
-router.route('/searchProductByCategoryId/:id').get(ProductController.searchProductByCategoryId)
+router.route('/listProductByCategoryId/:id').get(ProductController.listProductByCategoryId)
 router.route('/search/:search').get(ProductController.searchProduct)
 router.route('/newProducts').get(ProductController.newProducts)
 
