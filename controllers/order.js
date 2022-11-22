@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const OrderProduct = require("../models/OrderProduct");
 const orderid = require('order-id')('key');
+const User = require("../models/User");
 
 const index = async (req, res) => {
     if(req.user.role!="admin"){
@@ -11,6 +12,17 @@ const index = async (req, res) => {
     const sort = req.query.sort ? req.query.sort : ''
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
+
+    user_ids = await User
+    .find({
+        $or: [
+            { email: { $regex: search }},
+            { fullName: { $regex: search }},
+            { address: { $regex: search }}, 
+            { phoneNumber: { $regex: search }}
+        ]
+    })
+    .select('_id')
     
     if(sort){
         const asc = req.query.asc ? req.query.asc : 1
@@ -19,7 +31,7 @@ const index = async (req, res) => {
         sortObj[sort] = asc;
     
         orders = await Order
-        .find()
+        .find({'user': { $in: user_ids } })
         .populate({
             path: 'orderProducts',
             populate: {
@@ -28,21 +40,21 @@ const index = async (req, res) => {
         })
         .populate({
             path:'user',
-            match:{
-                $or: [
-                    { email: { $regex: search }},
-                    { fullName: { $regex: search }},
-                    { address: { $regex: search }}, 
-                    { phoneNumber: { $regex: search }}
-                ]
-            }
+            // match:{
+            //     $or: [
+            //         { email: { $regex: search }},
+            //         { fullName: { $regex: search }},
+            //         { address: { $regex: search }}, 
+            //         { phoneNumber: { $regex: search }}
+            //     ]
+            // }
         })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .sort(sortObj)
     }else{
         orders = await Order
-        .find()
+        .find({'user': { $in: user_ids } })
         .populate({
             path: 'orderProducts',
             populate: {
@@ -51,23 +63,23 @@ const index = async (req, res) => {
         })
         .populate({
             path:'user',
-            match:{
-                $or: [
-                    { email: { $regex: search }},
-                    { fullName: { $regex: search }},
-                    { address: { $regex: search }}, 
-                    { phoneNumber: { $regex: search }}
-                ]
-            }
+            // match:{
+            //     $or: [
+            //         { email: { $regex: search }},
+            //         { fullName: { $regex: search }},
+            //         { address: { $regex: search }}, 
+            //         { phoneNumber: { $regex: search }}
+            //     ]
+            // }
         })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         //.where("active").ne(false)
     }
-
-    orders = orders.filter(item => (item.user != null));
     
-    totalItem = await Order.countDocuments()
+    totalItem = await Order.countDocuments({
+        'user': { $in: user_ids }  
+    })
     totalPage = Math.ceil(totalItem/pageSize)
     
     return res.status(200).json({ orders, totalPage, totalItem })

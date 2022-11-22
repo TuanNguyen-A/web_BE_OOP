@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const { MongooseFindByReference } = require('mongoose-find-by-reference');
 
 const FeedbackSchema = new Schema({
     user: {
@@ -12,6 +13,8 @@ const FeedbackSchema = new Schema({
 }, {
     timestamps: true,
 })
+
+FeedbackSchema.plugin(MongooseFindByReference);
 
 const Feedback = mongoose.model('Feedback', FeedbackSchema)
 module.exports = Feedback
