@@ -53,6 +53,26 @@ const newProducts = async (req, res) => {
     return res.status(200).json({ products, totalItem, totalPage })
 }
 
+const listProductByCategoryId = async(req, res, next) =>{
+    const id = req.params.id
+
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    
+    products = await Product.find({ category_id: id, active: true })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+
+    totalItem = await Product.countDocuments({category_id: id, active: true})
+    totalPage = Math.ceil(totalItem/pageSize)
+
+    if(!products.length){
+        return res.status(404).json({ message: 'Cannot find product by category id.' })
+    }
+
+    return res.status(200).json({ products, totalItem, totalPage })
+}
+
 const add = async (req, res) => {
     if(req.user.role!="admin"){
         return res.status(400).json({ message: 'Bad request!!!' })
@@ -185,19 +205,7 @@ const getProduct = async (req, res, next) => {
     return res.status(200).json({ product })
 }
 
-const listProductByCategoryId = async(req, res, next) =>{
-    const id = req.params.id
-    console.log(id)
-    try{
-        const products = await Product.find({ category_id: id })
-        if(!products.length){
-            return res.status(404).json({ message: 'Cannot find product by category id.' })
-        }
-    }catch(err){
-        return res.status(404).json({ message: 'Cannot find product by category id.' })
-    }
-    return res.status(200).json({ products })
-}
+
 
 module.exports = {
     add,

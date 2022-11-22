@@ -1,4 +1,5 @@
 const Feedback = require("../models/Feedback");
+const User = require("../models/User");
 
 const index = async(req, res) => {
     if(req.user.role!="admin"){
@@ -10,19 +11,30 @@ const index = async(req, res) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
+    user_ids = await User
+    .find({
+        $or: [
+            { email: { $regex: search }},
+            { fullName: { $regex: search }},
+            { address: { $regex: search }}, 
+            { phoneNumber: { $regex: search }}
+        ]
+    })
+    .select('_id')
+
     if(sort){
         feedbacks = await Feedback
-        .find({})
+        .find({'user': { $in: user_ids } })
         .populate({
             path:'user',
-            match: {
-                $or: [
-                    { email: { $regex: search }},
-                    { fullName: { $regex: search }},
-                    { address: { $regex: search }}, 
-                    { phoneNumber: { $regex: search }}
-                ]
-            }
+            // match: {
+            //     $or: [
+            //         { email: { $regex: search }},
+            //         { fullName: { $regex: search }},
+            //         { address: { $regex: search }}, 
+            //         { phoneNumber: { $regex: search }}
+            //     ]
+            // }
         })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
@@ -30,32 +42,25 @@ const index = async(req, res) => {
 
     }else{
         feedbacks = await Feedback
-        .find({})
+        .find({'user': { $in: user_ids } })
         .populate({
             path:'user',
-            match: {
-                $or: [
-                    { email: { $regex: search } },
-                    { fullName: { $regex: search } },
-                    { address: { $regex: search } }, 
-                    { phoneNumber: { $regex: search } }
-                ]
-            }
+            // match: {
+            //     $or: [
+            //         { email: { $regex: search } },
+            //         { fullName: { $regex: search } },
+            //         { address: { $regex: search } }, 
+            //         { phoneNumber: { $regex: search } }
+            //     ]
+            // }
         })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
     }
-
-    feedbacks = feedbacks.filter(item => (item.user != null));
     
-    totalItem = await Feedback.countDocuments({})
-
-    // $or: [
-    //     { 'user.email': { $regex: search } },
-    //     { 'user.fullName': { $regex: search } },
-    //     { 'user.address': { $regex: search } }, 
-    //     { 'user.phoneNumber': { $regex: search } }
-    // ]
+    totalItem = await Feedback.countDocuments({
+        'user': { $in: user_ids }  
+    })
 
     console.log(totalItem)
     totalPage = Math.ceil(totalItem/pageSize)
