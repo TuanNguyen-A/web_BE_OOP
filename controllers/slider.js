@@ -15,18 +15,18 @@ const index = async (req, res) => {
         sortObj[sort] = asc;
     
         sliders = await Slider
-        .find({name: { $regex: search }, active: true})
+        .find({name: { $regex: search }})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .sort(sortObj)
     }else{
         sliders = await Slider
-        .find({name: { $regex: search }, active: true})
+        .find({name: { $regex: search }})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
     }
 
-    totalItem = await Slider.countDocuments({name: { $regex: search }, active: true})
+    totalItem = await Slider.countDocuments({name: { $regex: search }})
     totalPage = Math.ceil(totalItem/pageSize)
     return res.status(200).json({ sliders, totalPage, totalItem })
 }

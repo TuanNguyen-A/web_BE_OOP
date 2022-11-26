@@ -18,19 +18,19 @@ const index = async (req, res) => {
         console.log(sort)
     
         products = await Product
-        .find({name: { $regex: search }, active: true})
+        .find({name: { $regex: search }})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
         .sort(sortObj)
 
     }else{
         products = await Product
-        .find({name: { $regex: search }, active: true})
+        .find({name: { $regex: search }})
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
     }
 
-    totalItem = await Product.countDocuments({name: { $regex: search }, active: true})
+    totalItem = await Product.countDocuments({name: { $regex: search }})
     totalPage = Math.ceil(totalItem/pageSize)
 
     return res.status(200).json({ products, totalPage, totalItem })
