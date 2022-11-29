@@ -11,5 +11,4 @@ router.route('/update').post(passport.authenticate('jwt', { session: false }), D
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), DiscountController.deleteDiscount)
 router.route('/:id').get(DiscountController.getDiscount)
 
-
 module.exports = router;

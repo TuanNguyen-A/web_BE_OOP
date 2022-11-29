@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const OrderProduct = require('./OrderProduct')
 const Schema = mongoose.Schema
-const { MongooseFindByReference } = require('mongoose-find-by-reference');
 
 const OrderSchema = new Schema({
     id: {
@@ -52,8 +51,6 @@ OrderSchema.pre('remove', async function(next) {
         next(error)
     }
 })
-
-OrderSchema.plugin(MongooseFindByReference);
 
 const Order = mongoose.model('Order', OrderSchema)
 module.exports = Order

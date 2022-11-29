@@ -2,6 +2,7 @@ const User = require("../models/User");
 const { JWT_SECRET } = require('../configs')
 const JWT = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const { generateOTP, sendMailOTP, sendMailForgotPassword, sendMailNewPassword } = require('../utils/otp')
 
 const encodedToken = (userID) => {
     return JWT.sign({
@@ -21,15 +22,38 @@ const signUp = async (req, res, next) => {
 
     if (foundUser) return res.status(403).json({ message: 'Email is already in use.' })
 
-    // Create a new user
-    const newUser = new User({ fullName, email, phoneNumber, password, address, role })
-    await newUser.save()
-    const token = encodedToken(newUser._id)
+    const otp = generateOTP();
 
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    res.setHeader('Authorization', token)
+    try {
+        await sendMailOTP({
+            to: email,
+            OTP: otp,
+        });
+    } catch (error) {
+        return res.status(400).json({ message: "Unable to sign up, Please try again later" });
+    }
+    const newUser = new User({ fullName, email, phoneNumber, password, address, role, otp })
+    await newUser.save()
+
     return res.status(200).json({ success: true })
 }
+
+const verifyEmail = async (req, res) => {
+    const { email, otp } = req.body;
+    const user = await User.findOne({
+        email,
+    });
+    if (!user) {
+        return res.status(404).json({ message: 'User is not found' });
+    }
+    if (user && user.otp !== otp) {
+        return res.status(400).json({ message: 'OTP invalid' });
+    }
+    const updatedUser = await User.findByIdAndUpdate(user._id, {
+        $set: { active: true, otp: "" },
+    });
+    return res.status(200).json({ success: true })
+};
 
 //[POST] /auth/signIn
 const signIn = async (req, res, next) => {
@@ -47,8 +71,70 @@ const secret = async (req, res, next) => {
     return res.status(200).json({ resources: true, account })
 };
 
+const forgotPassword = async (req, res, next) => {
+    const { email } = req.body;
+
+    const user = await User.findOne({email});
+
+    const otp = generateOTP();
+
+    if (!user) {
+        return res.status(404).json({ message: 'User is not found' });
+    }
+
+    try {
+        await sendMailForgotPassword({
+            to: email,
+            OTP: otp,
+        });
+    } catch (error) {
+        return res.status(400).json({ message: "Unable to reset password, Please try again later" });
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+        $set: { otp },
+    });
+
+    return res.status(200).json({ success: true })
+};
+
+const verifyForgotPassword = async (req, res, next) => {
+    const { email, otp } = req.body;
+    const user = await User.findOne({
+        email,
+    });
+    if (!user) {
+        return res.status(404).json({ message: 'User is not found' });
+    }
+    if (user && user.otp !== otp) {
+        return res.status(400).json({ message: 'OTP invalid' });
+    }
+
+    const newPwd = generateOTP()
+
+    const salt = await bcrypt.genSalt(10)
+    const passwordHashed = await bcrypt.hash(newPwd, salt)
+
+    try {
+        await sendMailNewPassword({
+            to: email,
+            password: newPwd,
+        });
+    } catch (error) {
+        return res.status(400).json({ message: "Unable to reset password, Please try again later" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(user._id, {
+        $set: { otp: "", password: passwordHashed  },
+    });
+    return res.status(200).json({ success: true })
+};
+
 module.exports = {
     signUp,
     signIn,
-    secret
+    secret,
+    verifyEmail,
+    forgotPassword,
+    verifyForgotPassword
 };

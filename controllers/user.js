@@ -73,17 +73,9 @@ const getUser= async(req, res, next) => {
     return res.status(200).json({ user })
 }
 
-const searchUser = async(req, res, next) =>{
-    const search = req.params.search
-    const users = await User.find({ fullName: { $regex: search } })
-    console.log(users)
-    return res.status(200).json({ users })
-}
-
 module.exports = {
     index,
     updateUser,
     deleteUser,
-    getUser,
-    searchUser
+    getUser
 };
