@@ -28,7 +28,11 @@ const UserSchema = new Schema({
     active: {
         type: Boolean,
         default: false
-    }
+    },
+    otp: {
+      type: String,
+      required: true,
+    },
 }, {
     timestamps: true,
 });

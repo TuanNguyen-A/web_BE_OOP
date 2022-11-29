@@ -17,4 +17,10 @@ router.route('/signIn').post(validateBody(schemas.authSignInSchema), passport.au
 
 router.route('/secret').get(passport.authenticate('jwt', { session: false }), AuthController.secret)
 
+router.route('/verify-email').post(AuthController.verifyEmail)
+
+router.route('/forgot-password').post(AuthController.forgotPassword)
+
+router.route('/verify-forgot-password').post(AuthController.verifyForgotPassword)
+
 module.exports = router;
