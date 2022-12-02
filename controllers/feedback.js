@@ -70,7 +70,7 @@ const index = async(req, res) => {
 
 const add = async(req, res) => {
     
-    const newFeedback = new Feedback({content: req.body.content, user: req.user._id})
+    const newFeedback = new Feedback({content: req.body.content, user: req.user._id, rating: req.body.rating})
     await newFeedback.save()
     return res.status(201).json({ success: true })
 }
