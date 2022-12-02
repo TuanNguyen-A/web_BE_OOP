@@ -11,6 +11,7 @@ router.route('/add').post(OrderController.add);
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), OrderController.deleteOrder);
 router.route('/update').post(passport.authenticate('jwt', { session: false }), OrderController.updateOrder);
 router.route('/listOrderByUser').get(passport.authenticate('jwt', { session: false }), OrderController.listOrderByUser);
+router.route('/cancel/:id').post(passport.authenticate('jwt', { session: false }), OrderController.cancelOrder);
 router.route('/:id').get(passport.authenticate('jwt', { session: false }), OrderController.getOrder);
 
 module.exports = router;

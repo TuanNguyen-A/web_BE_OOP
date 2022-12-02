@@ -118,7 +118,14 @@ const deleteOrder = async (req, res, next) => {
 
 const getOrder = async (req, res, next) => {
     const _id = req.params.id
-    order = await Order.find({ _id }).populate('orderProducts').populate('user')
+    order = await Order.find({ _id })
+    .populate({
+        path: 'orderProducts',
+        populate: {
+            path: 'product',
+        }
+    })
+    .populate('user')
     if (!order.length) {
         return res.status(404).json({ message: 'order does not exist.' })
     }
@@ -137,7 +144,39 @@ const updateOrder = async(req, res, next) => {
         return res.status(404).json({ message: 'Order does not exist.' })
     }
 
+    if(status == 'cancel' || status == 'pending'){
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    if(status == 'shipping' && foundOrderById.status != 'processing' ){
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    if(status == 'shipped' && foundOrderById.status != 'shipping' ){
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
     const result = await Order.updateOne({ _id: id }, {status})
+    return res.status(200).json({ success: true })
+}
+
+const cancelOrder = async(req, res, next) => {
+    const { id } = req.params.id
+
+    const foundOrderById = await Order.findById(id)
+    if(!foundOrderById){
+        return res.status(404).json({ message: 'Order does not exist.' })
+    }
+
+    if(req.user._id != foundOrderById.user){
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    if(foundOrderById.status != 'pending' || foundOrderById.status != 'processing'){
+        return res.status(400).json({ message: 'Cannot cancel' })
+    }
+
+    const result = await Order.updateOne({ _id: id }, {status: 'cancelled'})
     return res.status(200).json({ success: true })
 }
 
@@ -162,5 +201,6 @@ module.exports = {
     deleteOrder,
     getOrder,
     updateOrder,
-    listOrderByUser
+    listOrderByUser,
+    cancelOrder
 };

@@ -26,9 +26,6 @@ const OrderSchema = new Schema({
     note: {
         type: String
     },
-    status: {
-        type: Number
-    },
     discount: {
         type: Number
     },
@@ -38,7 +35,12 @@ const OrderSchema = new Schema({
     totalPrice:{
         type: Number,
         required: true
-    }
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'processing', 'shipping', 'shipped', 'cancelled' ],
+        default: 'pending'
+    },
 }, {
     timestamps: true,
 })
