@@ -87,7 +87,8 @@ const index = async (req, res) => {
 
 const add = async (req, res) => {
 
-    const order = req.body
+    order = req.body
+    order.user = req.user._id
     order.id = orderid.generate()
 
     tempArr = []
@@ -161,18 +162,18 @@ const updateOrder = async(req, res, next) => {
 }
 
 const cancelOrder = async(req, res, next) => {
-    const { id } = req.params.id
+    const id = req.body.order_id
 
     const foundOrderById = await Order.findById(id)
     if(!foundOrderById){
         return res.status(404).json({ message: 'Order does not exist.' })
     }
 
-    if(req.user._id != foundOrderById.user){
+    if(!foundOrderById.user.equals(req.user._id)){
         return res.status(400).json({ message: 'Bad request' })
     }
 
-    if(foundOrderById.status != 'pending' || foundOrderById.status != 'processing'){
+    if(foundOrderById.status != 'pending' && foundOrderById.status != 'processing'){
         return res.status(400).json({ message: 'Cannot cancel' })
     }
 
