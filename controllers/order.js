@@ -196,6 +196,18 @@ const listOrderByUser = async(req, res, next) => {
 
 }
 
+const monthlyRevenue = async(req, res, next) => {
+    const orders = await Order
+        .find({user: req.user._id})
+        .populate({
+            path: 'orderProducts',
+            populate: {path: 'product'}
+        })
+
+
+    return res.status(200).json({ orders })
+}
+
 module.exports = {
     add,
     index,

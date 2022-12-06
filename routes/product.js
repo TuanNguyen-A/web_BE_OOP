@@ -12,7 +12,6 @@ router.route('/newProducts').get(ProductController.newProducts)
 router.route('/saleProducts').get(ProductController.saleProducts)
 router.route('/listProductByCategoryId/:id').get(ProductController.listProductByCategoryId)
 
-
 router.route('/:id').get(ProductController.getProduct)
 
 module.exports = router;

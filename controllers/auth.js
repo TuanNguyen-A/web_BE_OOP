@@ -58,6 +58,9 @@ const verifyEmail = async (req, res) => {
 //[POST] /auth/signIn
 const signIn = async (req, res, next) => {
     // Assign a token
+    if(!req.user.active){
+        return res.status(400).json({ message: "Login failed" })
+    }
     const token = encodedToken(req.user._id)
 
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');

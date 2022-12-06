@@ -71,7 +71,7 @@ const saleProducts = async (req, res) => {
 
 const listProductByCategoryId = async(req, res, next) =>{
     const id = req.params.id
-
+    console.log(id)
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
     
