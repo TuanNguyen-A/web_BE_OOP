@@ -27,7 +27,7 @@ const OrderSchema = new Schema({
         type: String
     },
     discount: {
-        type: Number
+        type: String
     },
     transportFee: {
         type: Number
