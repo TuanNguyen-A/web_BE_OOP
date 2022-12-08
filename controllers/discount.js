@@ -94,6 +94,19 @@ const getDiscount = async(req, res, next) => {
     const _id = req.params.id
     discount = await Discount.findOne({ 
         _id, 
+    })
+
+    if(!discount){
+        return res.status(404).json({ message: 'Discount does not exist.' })
+    }
+
+    return res.status(200).json({ discount })
+}
+
+const getDiscountByCode = async(req, res, next) => {
+    const code = req.params.code
+    discount = await Discount.findOne({ 
+        code, 
         active: true, 
         expiration_date: {$gte: Date.now()} 
     })
@@ -105,26 +118,13 @@ const getDiscount = async(req, res, next) => {
     return res.status(200).json({ discount })
 }
 
-const applyDiscount = async (req, res, next) => {
-    const _id = req.params.id
 
-    discountList = await Discount.find({ _id });
-    discount = discountList[0]
-
-    console.log("DISCOUNT HERE", discount)
-    numTemp = discount.purchase_limit - 1
-    Discount.updateOne({ _id: _id}, {$set: {purchase_limit: numTemp}}, function (err,res) {
-        if (err) throw err;
-        console.log('update success: record');
-    });
-
-    return res.status(200).json({ success: true })
-}
 
 module.exports = {
     add,
     index,
     deleteDiscount,
     updateDiscount,
+    getDiscountByCode,
     getDiscount
 };
