@@ -19,7 +19,9 @@ const DiscountSchema = new Schema({
         default: 0
     },
     purchase_limit: {
-        type: Number
+        type: Number,
+        default: 0,
+        required: true
     },
     expiration_date: {
         type: Date,

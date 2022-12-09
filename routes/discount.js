@@ -9,6 +9,7 @@ router.route('/').get(passport.authenticate('jwt', { session: false }), Discount
 router.route('/add').post(passport.authenticate('jwt', { session: false }), DiscountController.add)
 router.route('/update').post(passport.authenticate('jwt', { session: false }), DiscountController.updateDiscount)
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), DiscountController.deleteDiscount)
+router.route('/getDiscountByCode/:code').get(DiscountController.getDiscountByCode)
 router.route('/:id').get(DiscountController.getDiscount)
 
 module.exports = router;
