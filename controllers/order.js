@@ -91,11 +91,12 @@ const add = async (req, res) => {
     order = req.body
     order.user = req.user._id
     order.id = orderid.generate()
-    try {
-        await applyDiscount(order.discount, order.totalPrice)
-        console.log("HEREeeee")
-    } catch (e) {
-        return res.status(400).json({ message: e })
+    if(order.discount){
+        try {
+            await applyDiscount(order.discount, order.totalPrice)
+        } catch (e) {
+            return res.status(400).json({ message: e })
+        }
     }
 
 
@@ -108,8 +109,13 @@ const add = async (req, res) => {
     });
 
     order.orderProducts = tempArr
-    const newOrder = new Order(order)
-    await newOrder.save()
+
+    try {
+        const newOrder = new Order(order)
+        await newOrder.save()
+    } catch (error) {
+        return res.status(400).json({ message: error.message })
+    }
 
     return res.status(201).json({ success: true })
 }

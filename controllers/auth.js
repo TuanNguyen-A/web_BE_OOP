@@ -22,6 +22,15 @@ const signUp = async (req, res, next) => {
 
     if (foundUser) return res.status(403).json({ message: 'Email is already in use.' })
 
+
+    var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/
+    validate_password = regex.test(password)
+    if (!validate_password) {
+        return res.status(400).json({ message: 'Password is invalid.' })
+    }
+
+    console.log("Validate success")
+
     const otp = generateOTP();
 
     try {
@@ -32,6 +41,7 @@ const signUp = async (req, res, next) => {
     } catch (error) {
         return res.status(400).json({ message: "Unable to sign up, Please try again later" });
     }
+
     const newUser = new User({ fullName, email, phoneNumber, password, address, role, otp })
     await newUser.save()
 
@@ -58,7 +68,7 @@ const verifyEmail = async (req, res) => {
 //[POST] /auth/signIn
 const signIn = async (req, res, next) => {
     // Assign a token
-    if(!req.user.active){
+    if (!req.user.active) {
         return res.status(400).json({ message: "Login failed" })
     }
     const token = encodedToken(req.user._id)
@@ -77,7 +87,7 @@ const secret = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
     const { email } = req.body;
 
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
 
     const otp = generateOTP();
 
@@ -128,7 +138,7 @@ const verifyForgotPassword = async (req, res, next) => {
     }
 
     const updatedUser = await User.findByIdAndUpdate(user._id, {
-        $set: { otp: "", password: passwordHashed  },
+        $set: { otp: "", password: passwordHashed },
     });
     return res.status(200).json({ success: true })
 };
