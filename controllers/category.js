@@ -1,7 +1,8 @@
 const Category = require("../models/Category");
 
 const index = async(req, res) => {
-    const search = req.query.search ? req.query.search : ''
+    search = req.query.search ? req.query.search : ''
+    search = search.toLowerCase()
     const sort = req.query.sort ? req.query.sort : ''
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
@@ -42,7 +43,7 @@ const addCategory = async(req, res) => {
 
     if (foundCategory) return res.status(403).json({ message: 'Category is already in exist.' })
 
-    const newCategory = new Category({ name, active })
+    const newCategory = new Category({ name: name.toLowerCase(), active })
     await newCategory.save()
 
     return res.status(201).json({ success: true })
