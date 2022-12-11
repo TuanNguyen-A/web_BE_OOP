@@ -4,7 +4,8 @@ const Category = require("../models/Category");
 const { cloudinary } = require('../utils/cloudinary');
 
 const index = async (req, res) => {
-    const search = req.query.search ? req.query.search : ''
+    search = req.query.search ? req.query.search : ''
+    search = search.toLowerCase()
     const sort = req.query.sort ? req.query.sort : ''
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
@@ -95,6 +96,7 @@ const add = async (req, res) => {
     }
 
     const { name, category_id, content, imgList, price, price_sale, num, active } = req.body
+
     
     const foundProduct = await Product.findOne({ name })
 
@@ -118,7 +120,7 @@ const add = async (req, res) => {
 
 
 
-    const newProduct = new Product({ name, category_id, content, images, price, price_sale, num, active })
+    const newProduct = new Product({ name: name.toLowerCase(), category_id, content, images, price, price_sale, num, active })
     await newProduct.save()
 
     return res.status(201).json({ success: true })
