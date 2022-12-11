@@ -11,7 +11,11 @@ router.route('/add').post(passport.authenticate('jwt', { session: false }), Orde
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), OrderController.deleteOrder);
 router.route('/update').post(passport.authenticate('jwt', { session: false }), OrderController.updateOrder);
 router.route('/listOrderByUser').get(passport.authenticate('jwt', { session: false }), OrderController.listOrderByUser);
+router.route('/listForShipper').get(passport.authenticate('jwt', { session: false }), OrderController.listForShipper);
 router.route('/cancel').post(passport.authenticate('jwt', { session: false }), OrderController.cancelOrder);
+router.route('/receivedOrder').post(passport.authenticate('jwt', { session: false }), OrderController.receivedOrder);
+router.route('/shipperAssignOrder').post(passport.authenticate('jwt', { session: false }), OrderController.shipperAssignOrder);
+router.route('/shippedOrder').post(passport.authenticate('jwt', { session: false }), OrderController.shippedOrder);
 router.route('/:id').get(passport.authenticate('jwt', { session: false }), OrderController.getOrder);
 
 module.exports = router;

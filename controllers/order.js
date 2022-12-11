@@ -10,7 +10,6 @@ const index = async (req, res) => {
     }
 
     const search = req.query.search ? req.query.search : ''
-    const sort = req.query.sort ? req.query.sort : ''
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
@@ -25,58 +24,29 @@ const index = async (req, res) => {
         })
         .select('_id')
 
-    if (sort) {
-        const asc = req.query.asc ? req.query.asc : 1
-        console.log(asc)
-        var sortObj = {};
-        sortObj[sort] = asc;
 
-        orders = await Order
-            .find({ 'user': { $in: user_ids } })
-            .populate({
-                path: 'orderProducts',
-                populate: {
-                    path: 'product',
-                }
-            })
-            .populate({
-                path: 'user',
-                // match:{
-                //     $or: [
-                //         { email: { $regex: search }},
-                //         { fullName: { $regex: search }},
-                //         { address: { $regex: search }}, 
-                //         { phoneNumber: { $regex: search }}
-                //     ]
-                // }
-            })
-            .limit(pageSize)
-            .skip(pageSize * (pageIndex - 1))
-            .sort(sortObj)
-    } else {
-        orders = await Order
-            .find({ 'user': { $in: user_ids } })
-            .populate({
-                path: 'orderProducts',
-                populate: {
-                    path: 'product',
-                }
-            })
-            .populate({
-                path: 'user',
-                // match:{
-                //     $or: [
-                //         { email: { $regex: search }},
-                //         { fullName: { $regex: search }},
-                //         { address: { $regex: search }}, 
-                //         { phoneNumber: { $regex: search }}
-                //     ]
-                // }
-            })
-            .limit(pageSize)
-            .skip(pageSize * (pageIndex - 1))
-        //.where("active").ne(false)
-    }
+    orders = await Order
+        .find({ 'user': { $in: user_ids } })
+        .populate({
+            path: 'orderProducts',
+            populate: {
+                path: 'product',
+            }
+        })
+        .populate({
+            path: 'user',
+            // match:{
+            //     $or: [
+            //         { email: { $regex: search }},
+            //         { fullName: { $regex: search }},
+            //         { address: { $regex: search }}, 
+            //         { phoneNumber: { $regex: search }}
+            //     ]
+            // }
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort({createdAt: -1})
 
     totalItem = await Order.countDocuments({
         'user': { $in: user_ids }
@@ -86,12 +56,42 @@ const index = async (req, res) => {
     return res.status(200).json({ orders, totalPage, totalItem })
 }
 
+const listForShipper = async (req, res) => {
+    if (req.user.role != "shipper") {
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+
+    orders = await Order
+        .find({status: 'processing'})
+        .populate({
+            path: 'orderProducts',
+            populate: {
+                path: 'product',
+            }
+        })
+        .populate({
+            path: 'user',
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort({createdAt: -1})
+
+    totalItem = await Order.countDocuments({status: 'processing'})
+    totalPage = Math.ceil(totalItem / pageSize)
+
+    return res.status(200).json({ orders, totalPage, totalItem })
+}
+
+
 const add = async (req, res) => {
 
     order = req.body
     order.user = req.user._id
     order.id = orderid.generate()
-    if(order.discount){
+    if (order.discount) {
         try {
             await applyDiscount(order.discount, order.totalPrice)
         } catch (e) {
@@ -139,7 +139,7 @@ const applyDiscount = async (code, total) => {
     Discount.findOneAndUpdate({ code: code }, { $set: { purchase_limit: numTemp } }, function (err, res) {
         console.log(err)
         if (err) throw err;
-        
+
     });
 
 }
@@ -223,6 +223,26 @@ const cancelOrder = async (req, res, next) => {
     return res.status(200).json({ success: true })
 }
 
+const receivedOrder = async (req, res, next) => {
+    const id = req.body.order_id
+
+    const foundOrderById = await Order.findById(id)
+    if (!foundOrderById) {
+        return res.status(404).json({ message: 'Order does not exist.' })
+    }
+
+    if (!foundOrderById.user.equals(req.user._id)) {
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    if (foundOrderById.status != 'shipped') {
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    const result = await Order.updateOne({ _id: id }, { status: 'received' })
+    return res.status(200).json({ success: true })
+}
+
 const listOrderByUser = async (req, res, next) => {
 
     const orders = await Order
@@ -239,6 +259,50 @@ const listOrderByUser = async (req, res, next) => {
 }
 
 
+const shipperAssignOrder = async (req, res) => {
+    if (req.user.role != "shipper") {
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
+    const id = req.body.order_id
+
+    const foundOrderById = await Order.findById(id)
+    if (!foundOrderById) {
+        return res.status(404).json({ message: 'Order does not exist.' })
+    }
+
+    if (foundOrderById.status != 'processing') {
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    const result = await Order.updateOne({ _id: id }, { status: 'shipping', shipper: req.user._id })
+    return res.status(200).json({ success: true })
+}
+
+const shippedOrder = async (req, res) => {
+    if (req.user.role != "shipper") {
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
+    const id = req.body.order_id
+
+    const foundOrderById = await Order.findById(id)
+    if (!foundOrderById) {
+        return res.status(404).json({ message: 'Order does not exist.' })
+    }
+
+    if (!foundOrderById.shipper.equals(req.user._id)) {
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    if (foundOrderById.status != 'shipping') {
+        return res.status(400).json({ message: 'Bad request' })
+    }
+
+    const result = await Order.updateOne({ _id: id }, { status: 'shipped'})
+    return res.status(200).json({ success: true })
+}
+
 module.exports = {
     add,
     index,
@@ -246,5 +310,9 @@ module.exports = {
     getOrder,
     updateOrder,
     listOrderByUser,
+    listForShipper,
+    receivedOrder,
+    shipperAssignOrder,
+    shippedOrder,
     cancelOrder
 };

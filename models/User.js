@@ -23,7 +23,9 @@ const UserSchema = new Schema({
         type: String
     },
     role: {
-        type: String
+        type: String,
+        enum: ['user', 'admin', 'shipper' ],
+        default: "user"
     },
     active: {
         type: Boolean,
