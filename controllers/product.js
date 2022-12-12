@@ -12,11 +12,9 @@ const index = async (req, res) => {
     
     if(sort){
         const asc = req.query.asc ? req.query.asc : 1
-        console.log(asc)
+
         var sortObj = {};
         sortObj[sort] = asc;
-
-        console.log(sort)
     
         products = await Product
         .find({name: { $regex: search }})
@@ -220,6 +218,7 @@ const getProduct = async (req, res, next) => {
     if (!product) {
         return res.status(404).json({ message: 'Product does not exist.' })
     }
+    
     return res.status(200).json({ product })
 }
 

@@ -23,7 +23,7 @@ const signUp = async (req, res, next) => {
     if (foundUser) return res.status(403).json({ message: 'Email is already in use.' })
 
 
-    var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/
+    var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#|<>.^*()%!-]{8,}$/
     validate_password = regex.test(password)
     if (!validate_password) {
         return res.status(400).json({ message: 'Password is invalid.' })
