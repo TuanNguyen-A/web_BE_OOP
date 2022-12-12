@@ -11,20 +11,26 @@ const index = async(req, res) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
-    user_ids = await User
-    .find({
-        $or: [
-            { email: { $regex: search }},
-            { fullName: { $regex: search }},
-            { address: { $regex: search }}, 
-            { phoneNumber: { $regex: search }}
-        ]
-    })
-    .select('_id')
+    var sortObj = {};
+    if(search){
+        
+        user_ids = await User
+            .find({
+                $or: [
+                    { email: { $regex: search } },
+                    { fullName: { $regex: search } },
+                    { address: { $regex: search } },
+                    { phoneNumber: { $regex: search } }
+                ]
+            })
+            .select('_id')
+        
+        sortObj['user'] = { $in: user_ids };
+    }
 
     if(sort){
         feedbacks = await Feedback
-        .find({'user': { $in: user_ids } })
+        .find(sortObj)
         .populate({
             path:'user',
             // match: {
@@ -42,7 +48,7 @@ const index = async(req, res) => {
 
     }else{
         feedbacks = await Feedback
-        .find({'user': { $in: user_ids } })
+        .find(sortObj)
         .populate({
             path:'user',
             // match: {
@@ -58,9 +64,7 @@ const index = async(req, res) => {
         .skip(pageSize * (pageIndex - 1))
     }
     
-    totalItem = await Feedback.countDocuments({
-        'user': { $in: user_ids }  
-    })
+    totalItem = await Feedback.countDocuments(sortObj)
 
     console.log(totalItem)
     totalPage = Math.ceil(totalItem/pageSize)

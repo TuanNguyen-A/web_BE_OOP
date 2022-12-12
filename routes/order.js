@@ -7,11 +7,12 @@ const passport = require('passport');
 const OrderController = require('../controllers/order')
 
 router.route('/').get(passport.authenticate('jwt', { session: false }), OrderController.index);
+router.route('/listPendingOrder').get(passport.authenticate('jwt', { session: false }), OrderController.listPendingOrder);
+router.route('/listOrderByUser').get(passport.authenticate('jwt', { session: false }), OrderController.listOrderByUser);
+router.route('/listForShipper').get(passport.authenticate('jwt', { session: false }), OrderController.listForShipper);
 router.route('/add').post(passport.authenticate('jwt', { session: false }), OrderController.add);
 router.route('/delete').post(passport.authenticate('jwt', { session: false }), OrderController.deleteOrder);
 router.route('/update').post(passport.authenticate('jwt', { session: false }), OrderController.updateOrder);
-router.route('/listOrderByUser').get(passport.authenticate('jwt', { session: false }), OrderController.listOrderByUser);
-router.route('/listForShipper').get(passport.authenticate('jwt', { session: false }), OrderController.listForShipper);
 router.route('/cancel').post(passport.authenticate('jwt', { session: false }), OrderController.cancelOrder);
 router.route('/receivedOrder').post(passport.authenticate('jwt', { session: false }), OrderController.receivedOrder);
 router.route('/shipperAssignOrder').post(passport.authenticate('jwt', { session: false }), OrderController.shipperAssignOrder);

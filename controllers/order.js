@@ -13,20 +13,26 @@ const index = async (req, res) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
-    user_ids = await User
-        .find({
-            $or: [
-                { email: { $regex: search } },
-                { fullName: { $regex: search } },
-                { address: { $regex: search } },
-                { phoneNumber: { $regex: search } }
-            ]
-        })
-        .select('_id')
+    var sortObj = {};
+    if(search){
+        
+        user_ids = await User
+            .find({
+                $or: [
+                    { email: { $regex: search } },
+                    { fullName: { $regex: search } },
+                    { address: { $regex: search } },
+                    { phoneNumber: { $regex: search } }
+                ]
+            })
+            .select('_id')
+        
+        sortObj['user'] = { $in: user_ids };
+    }
 
 
     orders = await Order
-        .find({ 'user': { $in: user_ids } })
+        .find(sortObj)
         .populate({
             path: 'orderProducts',
             populate: {
@@ -35,22 +41,61 @@ const index = async (req, res) => {
         })
         .populate({
             path: 'user',
-            // match:{
-            //     $or: [
-            //         { email: { $regex: search }},
-            //         { fullName: { $regex: search }},
-            //         { address: { $regex: search }}, 
-            //         { phoneNumber: { $regex: search }}
-            //     ]
-            // }
         })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
-        .sort({createdAt: -1})
+        .sort({ createdAt: -1 })
 
-    totalItem = await Order.countDocuments({
-        'user': { $in: user_ids }
-    })
+    totalItem = await Order.countDocuments(sortObj)
+    totalPage = Math.ceil(totalItem / pageSize)
+
+    return res.status(200).json({ orders, totalPage, totalItem })
+}
+
+const listPendingOrder = async (req, res) => {
+    if (req.user.role != "admin") {
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
+    const search = req.query.search ? req.query.search : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+
+    var sortObj = {};
+    if(search){
+        
+        user_ids = await User
+            .find({
+                $or: [
+                    { email: { $regex: search } },
+                    { fullName: { $regex: search } },
+                    { address: { $regex: search } },
+                    { phoneNumber: { $regex: search } }
+                ]
+            })
+            .select('_id')
+        
+        sortObj['user'] = { $in: user_ids };
+    }
+
+    sortObj['status'] = 'pending';
+
+    orders = await Order
+        .find(sortObj)
+        .populate({
+            path: 'orderProducts',
+            populate: {
+                path: 'product',
+            }
+        })
+        .populate({
+            path: 'user',
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort({ createdAt: -1 })
+
+    totalItem = await Order.countDocuments(sortObj)
     totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ orders, totalPage, totalItem })
@@ -65,7 +110,7 @@ const listForShipper = async (req, res) => {
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
     orders = await Order
-        .find({status: 'processing'})
+        .find({ status: 'processing' })
         .populate({
             path: 'orderProducts',
             populate: {
@@ -77,9 +122,9 @@ const listForShipper = async (req, res) => {
         })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
-        .sort({createdAt: -1})
+        .sort({ createdAt: -1 })
 
-    totalItem = await Order.countDocuments({status: 'processing'})
+    totalItem = await Order.countDocuments({ status: 'processing' })
     totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ orders, totalPage, totalItem })
@@ -299,7 +344,7 @@ const shippedOrder = async (req, res) => {
         return res.status(400).json({ message: 'Bad request' })
     }
 
-    const result = await Order.updateOne({ _id: id }, { status: 'shipped'})
+    const result = await Order.updateOne({ _id: id }, { status: 'shipped' })
     return res.status(200).json({ success: true })
 }
 
@@ -314,5 +359,6 @@ module.exports = {
     receivedOrder,
     shipperAssignOrder,
     shippedOrder,
+    listPendingOrder,
     cancelOrder
 };
