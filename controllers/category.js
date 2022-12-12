@@ -1,12 +1,14 @@
 const Category = require("../models/Category");
 
 const index = async(req, res) => {
+
     search = req.query.search ? req.query.search : ''
     search = search.toLowerCase()
+
     const sort = req.query.sort ? req.query.sort : ''
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
-    
+
     if(sort){
         const asc = req.query.asc ? req.query.asc : 1
         console.log(asc)
@@ -23,7 +25,6 @@ const index = async(req, res) => {
         .find({name: { $regex: search }} )
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
-        //.where("active").ne(false)
     }
     
     totalItem = await Category.countDocuments({name: { $regex: search }})
@@ -37,6 +38,7 @@ const addCategory = async(req, res) => {
     if(req.user.role!="admin"){
         return res.status(400).json({ message: 'Bad request!!!' })
     }
+
     const { name, active } = req.body
     
     const foundCategory = await Category.findOne({ name })
