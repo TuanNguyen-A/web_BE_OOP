@@ -32,7 +32,7 @@ const index = async(req, res) => {
 }
 
 const updateUser = async(req, res, next) => {
-    const { email, id } = req.body
+    const { email, password, id } = req.body
 
     const foundUserById = await User.findById(id)
     if(!foundUserById){
@@ -41,6 +41,12 @@ const updateUser = async(req, res, next) => {
 
     if(email != foundUserById.email){
         return res.status(400).json({ message: 'Cannot change email' })
+    }
+
+    var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#|<>.^*()%!-]{8,}$/
+    validate_password = regex.test(password)
+    if (!validate_password) {
+        return res.status(400).json({ message: 'Password is invalid.' })
     }
 
     const salt = await bcrypt.genSalt(10)
