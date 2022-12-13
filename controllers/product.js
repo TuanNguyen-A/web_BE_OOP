@@ -4,6 +4,10 @@ const Category = require("../models/Category");
 const { cloudinary } = require('../utils/cloudinary');
 
 const index = async (req, res) => {
+    if (req.user.role != "admin") {
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
     search = req.query.search ? req.query.search : ''
     search = search.toLowerCase()
     const sort = req.query.sort ? req.query.sort : ''
@@ -36,6 +40,50 @@ const index = async (req, res) => {
     }
 
     totalItem = await Product.countDocuments({ name: { $regex: search } })
+    totalPage = Math.ceil(totalItem / pageSize)
+
+    return res.status(200).json({ products, totalPage, totalItem })
+}
+
+const homeProductList = async (req, res) => {
+    search = req.query.search ? req.query.search : ''
+    search = search.toLowerCase()
+    const sort = req.query.sort ? req.query.sort : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+
+    if (sort) {
+        const asc = req.query.asc ? req.query.asc : 1
+
+        var sortObj = {};
+        sortObj[sort] = asc;
+
+        products = await Product
+            .find({ name: { $regex: search } })
+            .populate({
+                path: 'category',
+                match: {
+                    active: true
+                }
+            })
+            .limit(pageSize)
+            .skip(pageSize * (pageIndex - 1))
+            .sort(sortObj)
+    } else {
+        products = await Product
+            .find({ name: { $regex: search } })
+            .populate({
+                path: 'category',
+                match: {
+                    active: true
+                }
+            })
+            .limit(pageSize)
+            .skip(pageSize * (pageIndex - 1))
+    }
+
+    products = products.filter(item => item.category != null);
+    totalItem = products.length
     totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ products, totalPage, totalItem })
@@ -258,6 +306,7 @@ module.exports = {
     getProduct,
     updateProduct,
     listProductByCategoryId,
+    homeProductList,
     newProducts,
     saleProducts
 };
