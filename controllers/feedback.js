@@ -11,7 +11,7 @@ const index = async(req, res) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
-    var sortObj = {};
+    var filterObj = {};
     if(search){
         
         user_ids = await User
@@ -25,12 +25,12 @@ const index = async(req, res) => {
             })
             .select('_id')
         
-        sortObj['user'] = { $in: user_ids };
+        filterObj['user'] = { $in: user_ids };
     }
 
     if(sort){
         feedbacks = await Feedback
-        .find(sortObj)
+        .find(filterObj)
         .populate({
             path:'user',
             // match: {
@@ -44,11 +44,11 @@ const index = async(req, res) => {
         })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
-        .sort(sortObj)
+        .sort(filterObj)
 
     }else{
         feedbacks = await Feedback
-        .find(sortObj)
+        .find(filterObj)
         .populate({
             path:'user',
             // match: {
@@ -64,7 +64,7 @@ const index = async(req, res) => {
         .skip(pageSize * (pageIndex - 1))
     }
     
-    totalItem = await Feedback.countDocuments(sortObj)
+    totalItem = await Feedback.countDocuments(filterObj)
 
     console.log(totalItem)
     totalPage = Math.ceil(totalItem/pageSize)

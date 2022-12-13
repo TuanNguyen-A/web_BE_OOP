@@ -13,7 +13,7 @@ const index = async (req, res) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
-    var sortObj = {};
+    var filterObj = {};
     if(search){
         
         user_ids = await User
@@ -27,12 +27,12 @@ const index = async (req, res) => {
             })
             .select('_id')
         
-        sortObj['user'] = { $in: user_ids };
+        filterObj['user'] = { $in: user_ids };
     }
 
 
     orders = await Order
-        .find(sortObj)
+        .find(filterObj)
         .populate({
             path: 'orderProducts',
             populate: {
@@ -46,7 +46,7 @@ const index = async (req, res) => {
         .skip(pageSize * (pageIndex - 1))
         .sort({ createdAt: -1 })
 
-    totalItem = await Order.countDocuments(sortObj)
+    totalItem = await Order.countDocuments(filterObj)
     totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ orders, totalPage, totalItem })
@@ -61,7 +61,7 @@ const listPendingOrder = async (req, res) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
-    var sortObj = {};
+    var filterObj = {};
     if(search){
         
         user_ids = await User
@@ -75,13 +75,13 @@ const listPendingOrder = async (req, res) => {
             })
             .select('_id')
         
-        sortObj['user'] = { $in: user_ids };
+        filterObj['user'] = { $in: user_ids };
     }
 
-    sortObj['status'] = 'pending';
+    filterObj['status'] = 'pending';
 
     orders = await Order
-        .find(sortObj)
+        .find(filterObj)
         .populate({
             path: 'orderProducts',
             populate: {
@@ -95,7 +95,7 @@ const listPendingOrder = async (req, res) => {
         .skip(pageSize * (pageIndex - 1))
         .sort({ createdAt: -1 })
 
-    totalItem = await Order.countDocuments(sortObj)
+    totalItem = await Order.countDocuments(filterObj)
     totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ orders, totalPage, totalItem })
@@ -169,7 +169,7 @@ const applyDiscount = async (code, total) => {
 
     discount = await Discount.findOne({ code });
 
-    if (discount.purchase_limit <= 0 || discount.expiration_date <= Date.now()) {
+    if (discount.purchase_limit <= discount.purchase_current || discount.expiration_date <= Date.now()) {
         throw "Discount code has expired"
     }
     if (discount.minium_order > total) {
@@ -177,11 +177,9 @@ const applyDiscount = async (code, total) => {
         throw "Not eligible for discount"
     }
 
-    numTemp = discount.purchase_limit - 1
-    // await Discount.updateOne({ code: code }, { $set: { purchase_limit: numTemp } }, function (err, res) {
-    //     if (err) throw err;
-    // });
-    Discount.findOneAndUpdate({ code: code }, { $set: { purchase_limit: numTemp } }, function (err, res) {
+    numTemp = discount.purchase_current + 1
+    
+    Discount.findOneAndUpdate({ code: code }, { $set: { purchase_current: numTemp } }, function (err, res) {
         console.log(err)
         if (err) throw err;
 
