@@ -9,28 +9,34 @@ const index = async (req, res) => {
     const sort = req.query.sort ? req.query.sort : ''
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
-    
-    if(sort){
+
+    if (sort) {
         const asc = req.query.asc ? req.query.asc : 1
 
         var sortObj = {};
         sortObj[sort] = asc;
-    
-        products = await Product
-        .find({name: { $regex: search }})
-        .limit(pageSize)
-        .skip(pageSize * (pageIndex - 1))
-        .sort(sortObj)
 
-    }else{
         products = await Product
-        .find({name: { $regex: search }})
-        .limit(pageSize)
-        .skip(pageSize * (pageIndex - 1))
+            .find({ name: { $regex: search } })
+            .populate({
+                path: 'category',
+            })
+            .limit(pageSize)
+            .skip(pageSize * (pageIndex - 1))
+            .sort(sortObj)
+
+    } else {
+        products = await Product
+            .find({ name: { $regex: search } })
+            .populate({
+                path: 'category'
+            })
+            .limit(pageSize)
+            .skip(pageSize * (pageIndex - 1))
     }
 
-    totalItem = await Product.countDocuments({name: { $regex: search }})
-    totalPage = Math.ceil(totalItem/pageSize)
+    totalItem = await Product.countDocuments({ name: { $regex: search } })
+    totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ products, totalPage, totalItem })
 }
@@ -40,14 +46,21 @@ const newProducts = async (req, res) => {
 
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
-    
+
     products = await Product
-        .find({createdAt: {$gte: threeDaysAgo}, active: true})
+        .find({ createdAt: { $gte: threeDaysAgo }, active: true })
+        .populate({
+            path: 'category',
+            match: {
+                active: true
+            }
+        })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
 
-    totalItem = await Product.countDocuments({createdAt: {$gte: threeDaysAgo}, active: true})
-    totalPage = Math.ceil(totalItem/pageSize)
+    products = products.filter(item => item.category != null);
+    totalItem = products.length
+    totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ products, totalItem, totalPage })
 }
@@ -56,32 +69,46 @@ const saleProducts = async (req, res) => {
     console.log("Here")
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
-    
+
     products = await Product
-        .find({price_sale: {$gt: 0}, active: true})
+        .find({ price_sale: { $gt: 0 }, active: true })
+        .populate({
+            path: 'category',
+            match: {
+                active: true
+            }
+        })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
 
-    totalItem = await Product.countDocuments({price_sale: {$gt: 0}, active: true})
-    totalPage = Math.ceil(totalItem/pageSize)
+    products = products.filter(item => item.category != null);
+    totalItem = products.length
+    totalPage = Math.ceil(totalItem / pageSize)
 
     return res.status(200).json({ products, totalItem, totalPage })
 }
 
-const listProductByCategoryId = async(req, res, next) =>{
+const listProductByCategoryId = async (req, res, next) => {
     const id = req.params.id
     console.log(id)
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
-    
+
     products = await Product.find({ category_id: id, active: true })
+        .populate({
+            path: 'category',
+            match: {
+                active: true
+            }
+        })
         .limit(pageSize)
         .skip(pageSize * (pageIndex - 1))
 
-    totalItem = await Product.countDocuments({category_id: id, active: true})
-    totalPage = Math.ceil(totalItem/pageSize)
+    products = products.filter(item => item.category != null);
+    totalItem = products.length
+    totalPage = Math.ceil(totalItem / pageSize)
 
-    if(!products.length){
+    if (!products.length) {
         return res.status(404).json({ message: 'Cannot find product by category id.' })
     }
 
@@ -89,13 +116,13 @@ const listProductByCategoryId = async(req, res, next) =>{
 }
 
 const add = async (req, res) => {
-    if(req.user.role!="admin"){
+    if (req.user.role != "admin") {
         return res.status(400).json({ message: 'Bad request!!!' })
     }
 
     const { name, category_id, content, imgList, price, price_sale, num, active } = req.body
 
-    
+
     const foundProduct = await Product.findOne({ name })
 
     if (foundProduct) return res.status(403).json({ message: 'Product is already in exist.' })
@@ -118,14 +145,14 @@ const add = async (req, res) => {
 
 
 
-    const newProduct = new Product({ name: name.toLowerCase(), category_id, content, images, price, price_sale, num, active })
+    const newProduct = new Product({ name: name.toLowerCase(), category: category_id, content, images, price, price_sale, num, active })
     await newProduct.save()
 
     return res.status(201).json({ success: true })
 }
 
 const deleteProduct = async (req, res, next) => {
-    if(req.user.role!="admin"){
+    if (req.user.role != "admin") {
         return res.status(400).json({ message: 'Bad request!!!' })
     }
     const _id = req.body.id
@@ -154,7 +181,7 @@ const deleteProduct = async (req, res, next) => {
 }
 
 const updateProduct = async (req, res, next) => {
-    if(req.user.role!="admin"){
+    if (req.user.role != "admin") {
         return res.status(400).json({ message: 'Bad request!!!' })
     }
     const id = req.body.id
@@ -197,18 +224,18 @@ const updateProduct = async (req, res, next) => {
                         upload_preset: 'dev_setups',
                         folder: 'dev_setups/product'
                     })
-                images.push(uploadedResponse.public_id)   
+                images.push(uploadedResponse.public_id)
             }
         } catch (err) {
             console.log(err)
             res.status(500).json({ err: 'errrrrr' })
         }
-        
-        await Product.updateOne({ _id: id }, { name, category_id, content, price, price_sale, num, active, images })
+
+        await Product.updateOne({ _id: id }, { name: name.toLowerCase(), category: category_id, content, price, price_sale, num, active, images })
         return res.status(200).json({ success: true })
     }
-    
-    const result = await Product.updateOne({ _id: id }, { name, category_id, content, price, price_sale, num, active })
+
+    const result = await Product.updateOne({ _id: id }, { name: name.toLowerCase(), category: category_id, content, price, price_sale, num, active })
     return res.status(200).json({ success: true })
 }
 
@@ -218,7 +245,7 @@ const getProduct = async (req, res, next) => {
     if (!product) {
         return res.status(404).json({ message: 'Product does not exist.' })
     }
-    
+
     return res.status(200).json({ product })
 }
 
