@@ -298,6 +298,21 @@ const listOrderByUser = async (req, res, next) => {
     return res.status(200).json({ orders })
 }
 
+const listOrderAssignedByShipper = async (req, res, next) => {
+
+    if (req.user.role != "shipper") {
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
+
+    const orders = await Order
+        .find({ shipper: req.user._id, status: 'shipping' })
+        .populate({
+            path: 'orderProducts',
+            populate: { path: 'product' }
+        })
+
+    return res.status(200).json({ orders })
+}
 
 const shipperAssignOrder = async (req, res) => {
     if (req.user.role != "shipper") {
@@ -355,5 +370,6 @@ module.exports = {
     shipperAssignOrder,
     shippedOrder,
     listPendingOrder,
+    listOrderAssignedByShipper,
     cancelOrder
 };
