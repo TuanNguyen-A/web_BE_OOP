@@ -3,6 +3,9 @@ const { JWT_SECRET } = require('../configs')
 const JWT = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const { generateOTP, sendMailOTP, sendMailForgotPassword, sendMailNewPassword } = require('../utils/otp')
+var password_generator = require('generate-password');
+
+const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#%|{}<>.^*()%!-]{8,}$/
 
 const encodedToken = (userID) => {
     return JWT.sign({
@@ -23,8 +26,7 @@ const signUp = async (req, res, next) => {
     if (foundUser) return res.status(403).json({ message: 'Email is already in use.' })
 
 
-    var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#|<>.^*()%!-]{8,}$/
-    validate_password = regex.test(password)
+    validate_password = password_regex.test(password)
     if (!validate_password) {
         return res.status(400).json({ message: 'Password is invalid.' })
     }
@@ -123,7 +125,17 @@ const verifyForgotPassword = async (req, res, next) => {
         return res.status(400).json({ message: 'OTP invalid' });
     }
 
-    const newPwd = generateOTP()
+    while(true){
+        var newPwd = password_generator.generate({
+            length: 10,
+            numbers: true,
+            symbols: true,
+            lowercase: true,
+            uppercase:  true
+        });
+    
+        if(password_regex.test(newPwd)) break;
+    }
 
     const salt = await bcrypt.genSalt(10)
     const passwordHashed = await bcrypt.hash(newPwd, salt)
