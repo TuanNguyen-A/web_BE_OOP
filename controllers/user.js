@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require('bcryptjs')
+const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#%|{}<>.^*()%!-]{8,}$/
 
 const index = async(req, res) => {
 
@@ -43,8 +44,7 @@ const updateUser = async(req, res, next) => {
         return res.status(400).json({ message: 'Cannot change email' })
     }
 
-    var regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#|<>.^*()%!-]{8,}$/
-    validate_password = regex.test(password)
+    validate_password = password_regex.test(password)
     if (!validate_password) {
         return res.status(400).json({ message: 'Password is invalid.' })
     }

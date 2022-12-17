@@ -6,6 +6,8 @@ const dbConfig = require("./configs/db");
 const app = express();
 const port = process.env.PORT || 3000;
 
+const password_generator = require("generate-password")
+
 var cors = require('cors');
 app.use(cors({
   origin: '*',
