@@ -178,8 +178,10 @@ const applyDiscount = async (code, total) => {
     }
 
     numTemp = discount.purchase_current + 1
+
+    updateObj = numTemp ? { purchase_current: numTemp } : { purchase_current: numTemp, active: false }
     
-    Discount.findOneAndUpdate({ code: code }, { $set: { purchase_current: numTemp } }, function (err, res) {
+    Discount.findOneAndUpdate({ code: code }, { $set: updateObj }, function (err, res) {
         console.log(err)
         if (err) throw err;
 
