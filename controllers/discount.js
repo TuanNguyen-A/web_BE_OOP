@@ -1,6 +1,9 @@
 const Discount = require("../models/Discount");
 
 const index = async(req, res) => {
+    if(req.user.role!="admin"){
+        return res.status(400).json({ message: 'Bad request!!!' })
+    }
 
     const search = req.query.search ? req.query.search : ''
     const sort = req.query.sort ? req.query.sort : ''
@@ -26,6 +29,48 @@ const index = async(req, res) => {
     }
 
     totalItem = await Discount.countDocuments({name: { $regex: search }})
+    totalPage = Math.ceil(totalItem/pageSize)
+    
+    return res.status(200).json({ discounts, totalPage, totalItem })
+}
+
+const homeDiscountList = async(req, res) => {
+    const search = req.query.search ? req.query.search : ''
+    const sort = req.query.sort ? req.query.sort : ''
+    const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
+    const pageSize = req.query.pageSize ? req.query.pageSize : 10
+    
+    if(sort){
+        const asc = req.query.asc ? req.query.asc : 1
+        console.log(asc)
+        var sortObj = {};
+        sortObj[sort] = asc;
+    
+        discounts = await Discount
+        .find({
+            name: { $regex: search }, 
+            active: true, 
+            expiration_date: {$gte: Date.now()} 
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+        .sort(sortObj)
+    }else{
+        discounts = await Discount
+        .find({
+            name: { $regex: search }, 
+            active: true, 
+            expiration_date: {$gte: Date.now()} 
+        })
+        .limit(pageSize)
+        .skip(pageSize * (pageIndex - 1))
+    }
+
+    totalItem = await Discount.countDocuments({
+        name: { $regex: search }, 
+        active: true, 
+        expiration_date: {$gte: Date.now()} 
+    })
     totalPage = Math.ceil(totalItem/pageSize)
     
     return res.status(200).json({ discounts, totalPage, totalItem })
@@ -123,5 +168,6 @@ module.exports = {
     deleteDiscount,
     updateDiscount,
     getDiscountByCode,
+    homeDiscountList,
     getDiscount
 };
