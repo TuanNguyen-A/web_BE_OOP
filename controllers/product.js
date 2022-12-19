@@ -142,6 +142,7 @@ const listProductByCategoryId = async (req, res, next) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
+
     products = await Product.find({ category: id, active: true })
         .populate({
             path: 'category',
@@ -158,7 +159,7 @@ const listProductByCategoryId = async (req, res, next) => {
     totalPage = Math.ceil(totalItem / pageSize)
 
     if (!products.length) {
-        return res.status(404).json({ message: 'Cannot find product by category id.' })
+        products=[]
     }
 
     return res.status(200).json({ products, totalItem, totalPage })
