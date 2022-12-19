@@ -296,6 +296,7 @@ const listOrderByUser = async (req, res, next) => {
             path: 'orderProducts',
             populate: { path: 'product' }
         })
+        .sort({createdAt: -1})
 
     return res.status(200).json({ orders })
 }

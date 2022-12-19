@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs')
 const { generateOTP, sendMailOTP, sendMailForgotPassword, sendMailNewPassword } = require('../utils/otp')
 var password_generator = require('generate-password');
 
-const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#%|{}<>.^*()%!-]{8,}$/
+const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$&+,:;=?@#%|{}<>.^*()%!-])[0-9a-zA-Z$&+,:;=?@#%|{}<>.^*()%!-]{8,}$/
 
 const encodedToken = (userID) => {
     return JWT.sign({

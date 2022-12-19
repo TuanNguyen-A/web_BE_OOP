@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require('bcryptjs')
-const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z$&+,:;=?@#%|{}<>.^*()%!-]{8,}$/
+const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$&+,:;=?@#%|{}<>.^*()%!-])[0-9a-zA-Z$&+,:;=?@#%|{}<>.^*()%!-]{8,}$/
 
 const index = async(req, res) => {
 

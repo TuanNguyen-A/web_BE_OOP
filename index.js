@@ -8,6 +8,10 @@ const port = process.env.PORT || 3000;
 
 const password_generator = require("generate-password")
 
+password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$&+,:;=?@#%|{}<>.^*()%!-])[0-9a-zA-Z$&+,:;=?@#%|{}<>.^*()%!-]{8,}$/
+console.log(password_regex.test("Phuong123"))
+
+
 var cors = require('cors');
 app.use(cors({
   origin: '*',
