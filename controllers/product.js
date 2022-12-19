@@ -142,10 +142,11 @@ const listProductByCategoryId = async (req, res, next) => {
     const pageIndex = req.query.pageIndex ? req.query.pageIndex : 1
     const pageSize = req.query.pageSize ? req.query.pageSize : 10
 
-    products = await Product.find({ category_id: id, active: true })
+    products = await Product.find({ category: id, active: true })
         .populate({
             path: 'category',
             match: {
+
                 active: true
             }
         })
